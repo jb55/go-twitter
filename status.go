@@ -1,5 +1,8 @@
 package twitter
 
+import "json"
+import "os"
+
 type Status interface {
   AsJsonString() string;
   GetCreatedAt() string;
@@ -8,38 +11,66 @@ type Status interface {
   GetId() int64;
   GetInReplyToScreenName() string;
   GetInReplyToStatusId() int64;
-  GetInReplyToUserId() int64;
-  GetNow() string;
+  GetInReplyToUserId() int;
+  GetNow() int;
 }
 
 type tTwitterStatus struct {
   jsonString string;
-  CreatedAt string;
-  CreatedAtSeconds int;
-  Favorited bool;
-  Id int64;
-  InReplyToScreenName string;
-  InReplyToStatusId int64;
-  InReplyToUserId int64;
-  Now string;
+  createdAt string;
+  createdAtSeconds int;
+  favorited bool;
+  id int64;
+  inReplyToScreenName string;
+  inReplyToStatusId int64;
+  inReplyToUserId int;
+  now int;
 }
 
-func (ts *tTwitterStatus) AsJsonString() string {
-  return ts.jsonString;
+func jsonToStatus(raw string, j *json.Json, errors chan os.Error) Status {
+  status := new(tTwitterStatus);
+
+  status.jsonString = raw;
+  status.createdAt = j.Get("created_at").String();
+  status.createdAtSeconds = 0;
+  status.favorited = j.Get("favorited").Bool();
+  status.id = int64(j.Get("id").Number());
+
+  return status;
 }
 
-func (ts *tTwitterStatus) GetCreatedAt() string {
-  return ts.CreatedAt;
+func (self *tTwitterStatus) AsJsonString() string {
+  return self.jsonString;
 }
 
-func (ts *tTwitterStatus) GetCreatedAtInSeconds() int {
-  return ts.CreatedAtSeconds;
+func (self *tTwitterStatus) GetCreatedAt() string {
+  return self.createdAt;
 }
 
-func (ts *tTwitterStatus) GetFavorited() bool {
-  return ts.Favorited;
+func (self *tTwitterStatus) GetCreatedAtInSeconds() int {
+  return self.createdAtSeconds;
 }
 
-func (ts *tTwitterStatus) GetId() int {
-  return 10;
+func (self *tTwitterStatus) GetFavorited() bool {
+  return self.favorited;
+}
+
+func (self *tTwitterStatus) GetId() int64 {
+  return self.id;
+}
+
+func (self *tTwitterStatus) GetInReplyToScreenName() string {
+  return self.inReplyToScreenName;
+}
+
+func (self *tTwitterStatus) GetInReplyToStatusId() int64 {
+  return self.inReplyToStatusId;
+}
+
+func (self *tTwitterStatus) GetInReplyToUserId() int {
+  return self.inReplyToUserId;
+}
+
+func (self *tTwitterStatus) GetNow() int {
+  return self.now;
 }

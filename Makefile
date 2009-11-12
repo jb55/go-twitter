@@ -1,17 +1,12 @@
 
-include $(GOROOT)/src/Make.$(GOARCH)
+include Make.$(GOARCH)
 
 TARG=twitter
+PREREQ+=http_auth
 GOFILES=\
 	api.go\
 	status.go\
+	http_auth.go
 
-tests: all twitter_tests
+include Make.pkg
 
-twitter_tests: tests.$O
-	$(LD) -o $@ $^
-
-tests.$O: gotwitter_tests.go
-	$(GC) -o $@ $^
- 
-include $(GOROOT)/src/Make.pkg
