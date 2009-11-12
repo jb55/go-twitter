@@ -98,7 +98,8 @@ func authGet(url, user, pwd string) (r *http.Response, err os.Error) {
 // Post issues a POST to the specified URL.
 //
 // Caller should close r.Body when done reading it.
-func authPost(url, user, pwd, bodyType string, body io.Reader) (r *http.Response, err os.Error) {
+func authPost(url, user, pwd, bodyType string, body io.Reader)
+             (r *http.Response, err os.Error) {
   var req http.Request;
   req.Method = "POST";
   req.Body = body;
@@ -126,7 +127,7 @@ func httpGet(url, user, pass string) (*http.Response, string, os.Error) {
   var err os.Error;
 
   if user != "" && pass != "" {
-    r, err = authGet(url, self.user, self.pass);
+    r, err = authGet(url, user, pass);
   } else {
     r, full, err = http.Get(url);
   }

@@ -73,7 +73,7 @@ func (self *Api) wrapGetStatus(id int64, response chan Status)
                               (status Status, err os.Error) {
   url := fmt.Sprintf(QUERY_GETSTATUS, kTwitterUrl, id, kFormat);
 
-  r, _, err := self.httpGet(url, self.user, self.pass);
+  r, _, err := httpGet(url, self.user, self.pass);
   if err != nil {
     err := &TwitterError{kErrFormat + err.String()};
     self.reportError(err);
