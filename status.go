@@ -23,7 +23,7 @@ type Status interface {
   GetText() string;
   GetInReplyToScreenName() string;
   GetInReplyToStatusId() int64;
-  GetInReplyToUserId() int;
+  GetInReplyToUserId() int64;
   GetNow() int;
 }
 
@@ -38,7 +38,7 @@ type tTwitterStatus struct {
   Id int64;
   In_reply_to_screen_name string;
   In_reply_to_status_id int64;
-  In_reply_to_user_id int;
+  In_reply_to_user_id int64;
   Error string;
   now int;
 }
@@ -79,7 +79,7 @@ func (self *tTwitterStatus) GetInReplyToStatusId() int64 {
   return self.In_reply_to_status_id;
 }
 
-func (self *tTwitterStatus) GetInReplyToUserId() int {
+func (self *tTwitterStatus) GetInReplyToUserId() int64 {
   return self.In_reply_to_user_id;
 }
 

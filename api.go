@@ -32,10 +32,12 @@ const (
 )
 
 const (
-  QUERY_GETSTATUS = "%sstatuses/show/%d.%s";
-  QUERY_UPDATESTATUS = "%sstatuses/update/update.%s";
-  QUERY_PUBLICTIMELINE = "%sstatuses/public_timeline.%s";
-  QUERY_USERTIMELINE = "%sstatuses/user_timeline.%s";
+  _QUERY_GETSTATUS = "%sstatuses/show/%d.%s";
+  _QUERY_UPDATESTATUS = "%sstatuses/update/update.%s";
+  _QUERY_PUBLICTIMELINE = "%sstatuses/public_timeline.%s";
+  _QUERY_USERTIMELINE = "%sstatuses/user_timeline.%s";
+  _QUERY_REPLIES = "%sstatuses/mentions.%s";
+  _QUERY_FRIENDSTIMELINE = "%sstatuses/friends_timeline.%s";
 )
 
 type TwitterError struct {
@@ -76,34 +78,49 @@ func (self *Api) GetLastError() os.Error {
   return last;
 }
 
+// Checks to see if there are any errors in the error channel
+func (self *Api) HasErrors() bool {
+  return len(self.errors) > 0;
+}
+
 // Retrieves the public timeline as a slice of Status objects
 func (self *Api) GetPublicTimeline() []Status {
-  url := fmt.Sprintf(QUERY_PUBLICTIMELINE, kTwitterUrl, kFormat);
-  timeline := self.getTimeline(url, 0);
+  url := fmt.Sprintf(_QUERY_PUBLICTIMELINE, kTwitterUrl, kFormat);
+  statuses := self.getStatuses(url);
 
-  return timeline;
+  return statuses;
 }
 
 // Retrieves the currently authorized user's 
 // timeline as a slice of Status objects
 func (self *Api) GetUserTimeline() []Status {
-  url := fmt.Sprintf(QUERY_USERTIMELINE, kTwitterUrl, kFormat);
-  timeline := self.getTimeline(url, 0);
+  url := fmt.Sprintf(_QUERY_USERTIMELINE, kTwitterUrl, kFormat);
+  statuses := self.getStatuses(url);
 
-  return timeline;
+  return statuses;
 }
 
-func (self *Api) getTimeline(url string, numItems int) []Status {
+// Returns the 20 most recent statuses posted by the authenticating user and 
+// that user's friends. This is the equivalent of /timeline/home on the Web.
+// Returns the statuses as a slice of Status objects
+func (self *Api) GetFriendsTimeline() []Status {
+  url := fmt.Sprintf(_QUERY_FRIENDSTIMELINE, kTwitterUrl, kFormat);
+  statuses := self.getStatuses(url);
+
+  return statuses;
+}
+
+// Returns the 20 most recent mentions for the authenticated user
+// Returns the statuses as a slice of Status objects
+func (self *Api) GetReplies() []Status {
+  url := fmt.Sprintf(_QUERY_REPLIES, kTwitterUrl, kFormat);
+  statuses := self.getStatuses(url);
+  return statuses;
+}
+
+func (self *Api) getStatuses(url string) []Status {
   var timelineDummy tTwitterTimelineDummy;
   var timeline []Status;
-  if numItems == 0 {
-    numItems = kDefaultTimelineAlloc;
-  }
-
-  // Unmarshal currently has a bug, it doesn't grow the
-  // slice properly. Might as well allocate 20 since that's
-  // how many we're going to get back anyways
-  timelineDummy.Object = make([]tTwitterStatus, numItems);
 
   jsonString := self.getJsonFromUrl(url);
   json.Unmarshal(jsonString, &timelineDummy);
@@ -169,7 +186,7 @@ func (self *Api) GetErrorChannel() chan os.Error {
 //
 // The twitter.Api instance must be authenticated
 func (self *Api) PostUpdate(status string, inReplyToId int64) {
-  url := fmt.Sprintf(QUERY_UPDATESTATUS, kTwitterUrl, kFormat);
+  url := fmt.Sprintf(_QUERY_UPDATESTATUS, kTwitterUrl, kFormat);
   var data string;
 
   data = "status=" + http.URLEscape(status);
@@ -211,7 +228,7 @@ func (self *Api) GetStatus(id int64) Status {
 }
 
 func (self *Api) wrapGetStatus(id int64, response chan Status) Status {
-  url := fmt.Sprintf(QUERY_GETSTATUS, kTwitterUrl, id, kFormat);
+  url := fmt.Sprintf(_QUERY_GETSTATUS, kTwitterUrl, id, kFormat);
   var status tTwitterStatusDummy;
   jsonString := self.getJsonFromUrl(url);
   json.Unmarshal(jsonString, &status);

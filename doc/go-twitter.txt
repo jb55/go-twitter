@@ -18,16 +18,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-CONSTANTS
-
-const (
-    QUERY_GETSTATUS      = "%sstatuses/show/%d.%s";
-    QUERY_UPDATESTATUS   = "%sstatuses/update/update.%s";
-    QUERY_PUBLICTIMELINE = "%sstatuses/public_timeline.%s";
-    QUERY_USERTIMELINE   = "%sstatuses/user_timeline.%s";
-)
-
-
 TYPES
 
 type Api struct {
@@ -59,6 +49,11 @@ errors or pseudo-exception handling. Eg.
      }
    }
 
+func (self *Api) GetFriendsTimeline() []Status
+Returns the 20 most recent statuses posted by the authenticating user and
+that user's friends. This is the equivalent of /timeline/home on the Web.
+Returns the statuses as a slice of Status objects
+
 func (self *Api) GetLastError() os.Error
 Returns the last error sent to the error channel.
 Calling this function pops the last error, subsequent calls will be nil
@@ -66,6 +61,10 @@ unless another error has occured.
 
 func (self *Api) GetPublicTimeline() []Status
 Retrieves the public timeline as a slice of Status objects
+
+func (self *Api) GetReplies() []Status
+Returns the 20 most recent mentions for the authenticated user
+Returns the statuses as a slice of Status objects
 
 func (self *Api) GetStatus(id int64) Status
 Gets a Twitter status given a status id
@@ -83,6 +82,9 @@ is private
 func (self *Api) GetUserTimeline() []Status
 Retrieves the currently authorized user's
 timeline as a slice of Status objects
+
+func (self *Api) HasErrors() bool
+Checks to see if there are any errors in the error channel
 
 func (self *Api) Logout()
 Disable Twitter authentication, subsequent REST calls will not use
@@ -105,7 +107,7 @@ type Status interface {
     GetText() string;
     GetInReplyToScreenName() string;
     GetInReplyToStatusId() int64;
-    GetInReplyToUserId() int;
+    GetInReplyToUserId() int64;
     GetNow() int;
 }
 
@@ -115,4 +117,28 @@ type TwitterError struct {
 
 func (self TwitterError) String() string
 type that satisfies the os.Error interface
+
+type User interface {
+    GetId() int64;
+    GetName() string;
+    GetScreenName() string;
+    GetLocation() string;
+    GetDescription() string;
+    GetProfileImageUrl() string;
+    GetProfileBackgroundTitle() bool;
+    GetProfileBackgroundImageUrl() string;
+    GetProfileSidebarFillColor() string;
+    GetProfileBackgroundColor() string;
+    GetProfileLinkColor() string;
+    GetProfileTextColor() string;
+    GetProtected() bool;
+    GetUtcOffset() int;
+    GetTimeZone() string;
+    GetURL() string;
+    GetStatus() Status;
+    GetStatusesCount() int;
+    GetFollowersCount() int;
+    GetFriendsCount() int;
+    GetFavoritesCount() int;
+}
 
