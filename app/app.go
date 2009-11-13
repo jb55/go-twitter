@@ -22,8 +22,11 @@ func main() {
   api := twitter.NewApi();
 
   api.Authenticate("jb55", "");
-  text := api.GetStatus(5641609144).GetText();
-  api.PostUpdate("Testing my Go twitter library", 0);
-
-  fmt.Printf(text);
+  statusChan := api.GetStatusAsync(5641609144);
+  statuses := api.GetPublicTimeline();
+  for i, status := range statuses {
+    fmt.Printf("#%d: %s\n", i, status.GetText());
+  }
+  fmt.Printf("GetStatusAsync: %s\n", (<-statusChan).GetText());
+  //api.PostUpdate("Testing my Go twitter library", 0);
 }

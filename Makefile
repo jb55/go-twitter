@@ -5,6 +5,7 @@ TARG=twitter
 GOFILES=\
 	api.go\
 	status.go\
+	util.go\
 	http_auth.go
 
 include Make.pkg

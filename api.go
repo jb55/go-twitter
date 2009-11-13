@@ -19,7 +19,6 @@ import (
   "http";
   "fmt";
   "os";
-  "io";
   "json";
 )
 
@@ -34,6 +33,7 @@ const (
 const (
   QUERY_GETSTATUS = "%sstatuses/show/%d.%s";
   QUERY_UPDATESTATUS = "%sstatuses/update/update.%s";
+  QUERY_PUBLICTIMELINE = "%sstatuses/public_timeline.%s";
 )
 
 type TwitterError struct {
@@ -72,6 +72,25 @@ func (self *Api) GetLastError() os.Error {
   last := self.lastError;
   self.lastError = nil;
   return last;
+}
+
+// Retrieves the public timeline as a slice of Status objects
+func (self *Api) GetPublicTimeline() []Status {
+  url := fmt.Sprintf(QUERY_PUBLICTIMELINE, kTwitterUrl, kFormat);
+  var timelineDummy tTwitterTimelineDummy;
+  var timeline []Status;
+
+  jsonString := self.getJsonFromUrl(url);
+  json.Unmarshal(jsonString, &timelineDummy);
+
+  dummyLen := len(timelineDummy.Object);
+  timeline = make([]Status, dummyLen);
+
+  for i := 0; i < dummyLen; i++ {
+    timeline[i] = &timelineDummy.Object[i];
+  }
+
+  return timeline;
 }
 
 // Sets the Twitter client header, aka the X-Twitter-Client http header on 
@@ -168,26 +187,18 @@ func (self *Api) GetStatus(id int64) Status {
 
 func (self *Api) wrapGetStatus(id int64, response chan Status) Status {
   url := fmt.Sprintf(QUERY_GETSTATUS, kTwitterUrl, id, kFormat);
+  var status tTwitterStatusDummy;
+  jsonString := self.getJsonFromUrl(url);
+  json.Unmarshal(jsonString, &status);
 
-  r, _, err := httpGet(url, self.user, self.pass);
-  if err != nil {
-    self.reportError(kErr + err.String());
-    return nil;
-  }
+  s := &(status.Object);
 
-  j, raw, err := parseResponse(r);
-  if err != nil {
-    self.reportError(kErr + err.String());
-    return nil;
-  }
-
-  status := jsonToStatus(raw, j, self.errors);
   if response != nil {
-    response <- status;
-    return status;
+    response <- s;
+    return s;
   }
 
-  return status;
+  return s;
 }
 
 func (self *Api) reportError(error string) {
@@ -205,17 +216,19 @@ func (self *Api) reportError(error string) {
   }
 }
 
-func parseResponse(response *http.Response) (*json.Json, string, os.Error) {
-  var b []byte;
-  b, _ = io.ReadAll(response.Body);
-  response.Body.Close();
-  bStr := string(b);
-
-  j, ok, err := json.StringToJson(bStr);
-  if !ok {
-    return nil, bStr, &TwitterError{err};
+func (self *Api) getJsonFromUrl(url string) string {
+  r, _, error := httpGet(url, self.user, self.pass);
+  if error != nil {
+    self.reportError(kErr + error.String());
+    return "";
   }
 
-  return &j, bStr, nil;
-}
+  data, err := parseResponse(r);
+  data = fixBrokenJson(data);
+  if err != nil {
+    self.reportError(kErr + err.String());
+    return "";
+  }
 
+  return data;
+}

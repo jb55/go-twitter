@@ -15,11 +15,7 @@
 //
 package twitter
 
-import "json"
-import "os"
-
 type Status interface {
-  AsJsonString() string;
   GetCreatedAt() string;
   GetCreatedAtInSeconds() int;
   GetFavorited() bool;
@@ -31,66 +27,60 @@ type Status interface {
   GetNow() int;
 }
 
+// Our internal status struct
+// the naming is odd so that
+// json.Unmarshal can do its thing properly
 type tTwitterStatus struct {
-  jsonString string;
-  text string;
-  createdAt string;
-  createdAtSeconds int;
-  favorited bool;
-  id int64;
-  inReplyToScreenName string;
-  inReplyToStatusId int64;
-  inReplyToUserId int;
+  Text string;
+  Created_at string;
+  CreatedAtSeconds int;
+  Favorited bool;
+  Id int64;
+  In_reply_to_screen_name string;
+  In_reply_to_status_id int64;
+  In_reply_to_user_id int;
+  Error string;
   now int;
 }
 
-func jsonToStatus(raw string, j *json.Json, errors chan os.Error) Status {
-  status := new(tTwitterStatus);
-
-  status.jsonString = raw;
-  status.createdAt = j.Get("created_at").String();
-  status.createdAtSeconds = 0;
-  status.favorited = j.Get("favorited").Bool();
-  status.text = j.Get("text").String();
-  status.id = int64(j.Get("id").Number());
-
-  return status;
+type tTwitterStatusDummy struct {
+  Object tTwitterStatus;
 }
 
-func (self *tTwitterStatus) AsJsonString() string {
-  return self.jsonString;
+type tTwitterTimelineDummy struct {
+  Object []tTwitterStatus;
 }
 
 func (self *tTwitterStatus) GetCreatedAt() string {
-  return self.createdAt;
+  return self.Created_at;
 }
 
 func (self *tTwitterStatus) GetCreatedAtInSeconds() int {
-  return self.createdAtSeconds;
+  return self.CreatedAtSeconds;
 }
 
 func (self *tTwitterStatus) GetFavorited() bool {
-  return self.favorited;
+  return self.Favorited;
 }
 
 func (self *tTwitterStatus) GetId() int64 {
-  return self.id;
+  return self.Id;
 }
 
 func (self *tTwitterStatus) GetInReplyToScreenName() string {
-  return self.inReplyToScreenName;
+  return self.In_reply_to_screen_name;
 }
 
 func (self *tTwitterStatus) GetText() string {
-  return self.text;
+  return self.Text;
 }
 
 func (self *tTwitterStatus) GetInReplyToStatusId() int64 {
-  return self.inReplyToStatusId;
+  return self.In_reply_to_status_id;
 }
 
 func (self *tTwitterStatus) GetInReplyToUserId() int {
-  return self.inReplyToUserId;
+  return self.In_reply_to_user_id;
 }
 
 func (self *tTwitterStatus) GetNow() int {

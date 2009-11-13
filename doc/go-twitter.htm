@@ -30,13 +30,15 @@ limitations under the License.
 				<a href="../api.go">api.go</a>
 				<a href="../http_auth.go">http_auth.go</a>
 				<a href="../status.go">status.go</a>
+				<a href="../util.go">util.go</a>
 			</span>
 			</p>
 		<h2>Constants</h2>
 			
-			<pre><a id="L34"></a>const (
-    <a id="L35"></a>QUERY_GETSTATUS    = &#34;%sstatuses/show/%d.%s&#34;;
-    <a id="L36"></a>QUERY_UPDATESTATUS = &#34;%sstatuses/update/update.%s&#34;;
+			<pre><a id="L33"></a>const (
+    <a id="L34"></a>QUERY_GETSTATUS      = &#34;%sstatuses/show/%d.%s&#34;;
+    <a id="L35"></a>QUERY_UPDATESTATUS   = &#34;%sstatuses/update/update.%s&#34;;
+    <a id="L36"></a>QUERY_PUBLICTIMELINE = &#34;%sstatuses/public_timeline.%s&#34;;
 <a id="L37"></a>)</pre>
 			<h2>type <a href="../api.go#L43"><a id="L43"></a>Api</a></h2>
 			
@@ -49,15 +51,15 @@ limitations under the License.
 Creates and initializes new Api objec
 </p>
 
-				<h3>func (<a id="L91"></a>*Api) <a href="../api.go#L91">Authenticate</a></h3>
-				<p><code><a id="L91"></a>func (self *Api) Authenticate(username, password string)</code></p>
+				<h3>func (<a id="L110"></a>*Api) <a href="../api.go#L110">Authenticate</a></h3>
+				<p><code><a id="L110"></a>func (self *Api) Authenticate(username, password string)</code></p>
 				<p>
 Sets the username and password string for all subsequent authorized
 HTTP requests
 </p>
 
-				<h3>func (<a id="L120"></a>*Api) <a href="../api.go#L120">GetErrorChannel</a></h3>
-				<p><code><a id="L120"></a>func (self *Api) GetErrorChannel() chan os.Error</code></p>
+				<h3>func (<a id="L139"></a>*Api) <a href="../api.go#L139">GetErrorChannel</a></h3>
+				<p><code><a id="L139"></a>func (self *Api) GetErrorChannel() chan os.Error</code></p>
 				<p>
 Returns a channel which receives API errors. Can be used for logging
 errors or pseudo-exception handling. Eg.
@@ -85,14 +87,20 @@ Calling this function pops the last error, subsequent calls will be nil
 unless another error has occured.
 </p>
 
-				<h3>func (<a id="L163"></a>*Api) <a href="../api.go#L163">GetStatus</a></h3>
-				<p><code><a id="L163"></a>func (self *Api) GetStatus(id int64) Status</code></p>
+				<h3>func (<a id="L78"></a>*Api) <a href="../api.go#L78">GetPublicTimeline</a></h3>
+				<p><code><a id="L78"></a>func (self *Api) GetPublicTimeline() []Status</code></p>
+				<p>
+Retrieves the public timeline as a slice of Status objects
+</p>
+
+				<h3>func (<a id="L182"></a>*Api) <a href="../api.go#L182">GetStatus</a></h3>
+				<p><code><a id="L182"></a>func (self *Api) GetStatus(id int64) Status</code></p>
 				<p>
 Gets a Twitter status given a status id
 </p>
 
-				<h3>func (<a id="L154"></a>*Api) <a href="../api.go#L154">GetStatusAsync</a></h3>
-				<p><code><a id="L154"></a>func (self *Api) GetStatusAsync(id int64) chan Status</code></p>
+				<h3>func (<a id="L173"></a>*Api) <a href="../api.go#L173">GetStatusAsync</a></h3>
+				<p><code><a id="L173"></a>func (self *Api) GetStatusAsync(id int64) chan Status</code></p>
 				<p>
 Gets a Twitter status given a status id
 </p>
@@ -106,15 +114,15 @@ The twitter.Api instance must be authenticated if the status message
 is private
 </p>
 
-				<h3>func (<a id="L98"></a>*Api) <a href="../api.go#L98">Logout</a></h3>
-				<p><code><a id="L98"></a>func (self *Api) Logout()</code></p>
+				<h3>func (<a id="L117"></a>*Api) <a href="../api.go#L117">Logout</a></h3>
+				<p><code><a id="L117"></a>func (self *Api) Logout()</code></p>
 				<p>
 Disable Twitter authentication, subsequent REST calls will not use
 Authentication
 </p>
 
-				<h3>func (<a id="L127"></a>*Api) <a href="../api.go#L127">PostUpdate</a></h3>
-				<p><code><a id="L127"></a>func (self *Api) PostUpdate(status string, inReplyToId int64)</code></p>
+				<h3>func (<a id="L146"></a>*Api) <a href="../api.go#L146">PostUpdate</a></h3>
+				<p><code><a id="L146"></a>func (self *Api) PostUpdate(status string, inReplyToId int64)</code></p>
 				<p>
 Post a Twitter status message to the authenticated user
 </p>
@@ -122,27 +130,26 @@ Post a Twitter status message to the authenticated user
 The twitter.Api instance must be authenticated
 </p>
 
-				<h3>func (<a id="L79"></a>*Api) <a href="../api.go#L79">SetClientString</a></h3>
-				<p><code><a id="L79"></a>func (self *Api) SetClientString(client string)</code></p>
+				<h3>func (<a id="L98"></a>*Api) <a href="../api.go#L98">SetClientString</a></h3>
+				<p><code><a id="L98"></a>func (self *Api) SetClientString(client string)</code></p>
 				<p>
 Sets the Twitter client header, aka the X-Twitter-Client http header on
 all POST operations
 </p>
 
-			<h2>type <a href="../status.go#L21"><a id="L21"></a>Status</a></h2>
+			<h2>type <a href="../status.go#L18"><a id="L18"></a>Status</a></h2>
 			
-			<p><pre><a id="L21"></a>type Status interface {
-    <a id="L22"></a>AsJsonString() string;
-    <a id="L23"></a>GetCreatedAt() string;
-    <a id="L24"></a>GetCreatedAtInSeconds() int;
-    <a id="L25"></a>GetFavorited() bool;
-    <a id="L26"></a>GetId() int64;
-    <a id="L27"></a>GetText() string;
-    <a id="L28"></a>GetInReplyToScreenName() string;
-    <a id="L29"></a>GetInReplyToStatusId() int64;
-    <a id="L30"></a>GetInReplyToUserId() int;
-    <a id="L31"></a>GetNow() int;
-<a id="L32"></a>}</pre></p>
+			<p><pre><a id="L18"></a>type Status interface {
+    <a id="L19"></a>GetCreatedAt() string;
+    <a id="L20"></a>GetCreatedAtInSeconds() int;
+    <a id="L21"></a>GetFavorited() bool;
+    <a id="L22"></a>GetId() int64;
+    <a id="L23"></a>GetText() string;
+    <a id="L24"></a>GetInReplyToScreenName() string;
+    <a id="L25"></a>GetInReplyToStatusId() int64;
+    <a id="L26"></a>GetInReplyToUserId() int;
+    <a id="L27"></a>GetNow() int;
+<a id="L28"></a>}</pre></p>
 			<h2>type <a href="../api.go#L39"><a id="L39"></a>TwitterError</a></h2>
 			
 			<p><pre><a id="L39"></a>type TwitterError struct {

@@ -21,8 +21,9 @@ limitations under the License.
 CONSTANTS
 
 const (
-    QUERY_GETSTATUS    = "%sstatuses/show/%d.%s";
-    QUERY_UPDATESTATUS = "%sstatuses/update/update.%s";
+    QUERY_GETSTATUS      = "%sstatuses/show/%d.%s";
+    QUERY_UPDATESTATUS   = "%sstatuses/update/update.%s";
+    QUERY_PUBLICTIMELINE = "%sstatuses/public_timeline.%s";
 )
 
 
@@ -62,6 +63,9 @@ Returns the last error sent to the error channel.
 Calling this function pops the last error, subsequent calls will be nil
 unless another error has occured.
 
+func (self *Api) GetPublicTimeline() []Status
+Retrieves the public timeline as a slice of Status objects
+
 func (self *Api) GetStatus(id int64) Status
 Gets a Twitter status given a status id
 
@@ -89,7 +93,6 @@ Sets the Twitter client header, aka the X-Twitter-Client http header on
 all POST operations
 
 type Status interface {
-    AsJsonString() string;
     GetCreatedAt() string;
     GetCreatedAtInSeconds() int;
     GetFavorited() bool;
