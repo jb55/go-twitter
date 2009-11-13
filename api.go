@@ -80,6 +80,11 @@ func (self *Api) GetPublicTimeline() []Status {
   var timelineDummy tTwitterTimelineDummy;
   var timeline []Status;
 
+  // Unmarshal currently has a bug, it doesn't grow the
+  // slice properly. Might as well allocate 20 since that's
+  // how many we're going to get back anyways
+  timelineDummy.Object = make([]tTwitterStatus, 20);
+
   jsonString := self.getJsonFromUrl(url);
   json.Unmarshal(jsonString, &timelineDummy);
 
