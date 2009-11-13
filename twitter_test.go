@@ -73,20 +73,27 @@ func authFromFile() {
 
 func verifyValidStatus(s Status, t *testing.T, i int) {
   const kFormat = "Status Struct #%d: %v";
+  var numErrors int = 0;
+
   if val := s.GetId(); val <= 0 {
-    t.Logf(kFormat, i, s);
     t.Errorf("Status.GetId() is <= 0, got %d expected > 0", val);
+    numErrors++;
   }
 
   if IsEmpty(s.GetCreatedAt()) {
-    t.Logf(kFormat, i, s);
     t.Error("Status.GetCreatedAt() is empty, expected not empty");
+    numErrors++;
   }
 
   if IsEmpty(s.GetText()) {
-    t.Logf(kFormat, i, s);
     t.Error("Status.GetText() is empty, expected not empty");
+    numErrors++;
   }
+
+  if numErrors > 0 {
+    t.Logf(kFormat, i, s);
+  }
+
 }
 
 func getAllApiErrors(errors chan os.Error, t *testing.T) {
