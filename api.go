@@ -8,12 +8,17 @@ import (
   "json";
 )
 
-const kTwitterUrl = "http://www.twitter.com/"
-const kFormat = "json"
-const kErrFormat = "GoTwitter Error: "
+const (
+  kTwitterUrl = "http://www.twitter.com/";
+  kDefaultClient = "go-twitter";
+  kFormat = "json";
+  kErr = "GoTwitter Error: ";
+  kWarn = "GoTwitter Warning: ";l
+)
 
 const (
   QUERY_GETSTATUS = "%sstatuses/show/%d.%s";
+  QUERY_UPDATESTATUS = "%sstatuses/update/update.%s";
 )
 
 type TwitterError struct {
@@ -24,6 +29,8 @@ type Api struct {
   user string;
   pass string;
   errors chan os.Error;
+  lastError os.Error;
+  client string;
 }
 
 // type that satisfies the os.Error interface
@@ -37,8 +44,24 @@ func NewApi() *Api {
   return api;
 }
 
+func (self *Api) isAuthed() bool {
+  // TODO: validate user and pass
+  return self.user != "" && self.pass != "";
+}
+
+func (self *Api) GetLastError() os.Error {
+  last := self.lastError;
+  self.lastError = nil;
+  return last;
+}
+
+func (self *Api) SetClientString(client string) {
+  self.client = client;
+}
+
 func (self *Api) Init() {
   self.errors = make(chan os.Error, 16);
+  self.client = kDefaultClient;
 }
 
 func (self *Api) Authenticate(username, password string) {
@@ -55,56 +78,74 @@ func (self *Api) GetErrorChannel() chan os.Error {
   return self.errors;
 }
 
-func (self *Api) GetStatusAsync(id int64) (response chan Status, err os.Error) {
+func (self *Api) PostUpdate(status string, inReplyToId int64) {
+  url := fmt.Sprintf(QUERY_UPDATESTATUS, kTwitterUrl, kFormat);
+  var data string;
+
+  data = "status=" + http.URLEscape(status);
+  if inReplyToId != 0 {
+    reply_data := fmt.Sprintf("&in_reply_to_status_id=%d", inReplyToId);
+    data += reply_data;
+  }
+
+  _, err := httpPost(url, self.user, self.pass, self.client, data);
+  if err != nil {
+    self.reportError(kErr + err.String());
+    return;
+  }
+
+  return;
+}
+
+func (self *Api) GetStatusAsync(id int64) chan Status {
   // make it a one-sized buffered channel so our goroutine doesn't sit
   // blocking waiting for the client to receive the data
-  c := make(chan Status, 1);
-  go self.wrapGetStatus(id, c);
-  return c, nil;
+  response := make(chan Status, 1);
+  go self.wrapGetStatus(id, response);
+  return response;
 }
 
-func (self *Api) GetStatus(id int64) (status Status, e os.Error) {
-  status, err := self.wrapGetStatus(id, nil);
+func (self *Api) GetStatus(id int64) Status {
+  status := self.wrapGetStatus(id, nil);
 
-  return status, err;
+  return status;
 }
 
-func (self *Api) wrapGetStatus(id int64, response chan Status)
-                              (status Status, err os.Error) {
+func (self *Api) wrapGetStatus(id int64, response chan Status) Status {
   url := fmt.Sprintf(QUERY_GETSTATUS, kTwitterUrl, id, kFormat);
 
   r, _, err := httpGet(url, self.user, self.pass);
   if err != nil {
-    err := &TwitterError{kErrFormat + err.String()};
-    self.reportError(err);
-    return nil, err;
+    self.reportError(kErr + err.String());
+    return nil;
   }
 
   j, raw, err := parseResponse(r);
   if err != nil {
-    err := &TwitterError{kErrFormat + err.String()};
-    self.reportError(err);
-    return nil, err;
+    self.reportError(kErr + err.String());
+    return nil;
   }
 
-  status = jsonToStatus(raw, j, self.errors);
+  status := jsonToStatus(raw, j, self.errors);
   if response != nil {
     response <- status;
-    return status, nil;
+    return status;
   }
 
-  return status, nil
+  return status;
 }
 
-func (self *Api) reportError(error *TwitterError) {
-  error.error += "\n";
-  ok := self.errors <- error;
+func (self *Api) reportError(error string) {
+  error += "\n";
+  err := &TwitterError{error};
+  self.lastError = err;
+  ok := self.errors <- err;
   if !ok {
     // The error buffer is full, make room for one
     <-self.errors;
-    ok := self.errors <- error;
+    ok := self.errors <- err;
     if !ok {
-      fmt.Fprintf(os.Stderr, "Error buffer error\n");
+      fmt.Fprintf(os.Stderr, kErr + "Error adding error to error buffer\n");
     }
   }
 }

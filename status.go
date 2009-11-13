@@ -9,6 +9,7 @@ type Status interface {
   GetCreatedAtInSeconds() int;
   GetFavorited() bool;
   GetId() int64;
+  GetText() string;
   GetInReplyToScreenName() string;
   GetInReplyToStatusId() int64;
   GetInReplyToUserId() int;
@@ -17,6 +18,7 @@ type Status interface {
 
 type tTwitterStatus struct {
   jsonString string;
+  text string;
   createdAt string;
   createdAtSeconds int;
   favorited bool;
@@ -34,6 +36,7 @@ func jsonToStatus(raw string, j *json.Json, errors chan os.Error) Status {
   status.createdAt = j.Get("created_at").String();
   status.createdAtSeconds = 0;
   status.favorited = j.Get("favorited").Bool();
+  status.text = j.Get("text").String();
   status.id = int64(j.Get("id").Number());
 
   return status;
@@ -61,6 +64,10 @@ func (self *tTwitterStatus) GetId() int64 {
 
 func (self *tTwitterStatus) GetInReplyToScreenName() string {
   return self.inReplyToScreenName;
+}
+
+func (self *tTwitterStatus) GetText() string {
+  return self.text;
 }
 
 func (self *tTwitterStatus) GetInReplyToStatusId() int64 {

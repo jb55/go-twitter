@@ -34,7 +34,9 @@ func (e *badStringError) String() string {
 
 // Given a string of the form "host", "host:port", or "[ipv6::address]:port",
 // return true if the string includes a port.
-func hasPort(s string) bool { return strings.LastIndex(s, ":") > strings.LastIndex(s, "]") }
+func hasPort(s string) bool { 
+  return strings.LastIndex(s, ":") > strings.LastIndex(s, "]");
+}
 
 func send(req *http.Request) (resp *http.Response, err os.Error) {
   addr := req.URL.Host;
@@ -98,7 +100,7 @@ func authGet(url, user, pwd string) (r *http.Response, err os.Error) {
 // Post issues a POST to the specified URL.
 //
 // Caller should close r.Body when done reading it.
-func authPost(url, user, pwd, bodyType string, body io.Reader)
+func authPost(url, user, pwd, client, bodyType string, body io.Reader)
              (r *http.Response, err os.Error) {
   var req http.Request;
   req.Method = "POST";
@@ -106,7 +108,7 @@ func authPost(url, user, pwd, bodyType string, body io.Reader)
   req.Header = map[string]string{
     "Content-Type": bodyType,
     "Transfer-Encoding": "chunked",
-    "X-Twitter-Client": "go-twitter",
+    "X-Twitter-Client": client,
     "X-Twitter-Version": "0.1",
     "Authorization": "Basic " + encodedUsernameAndPassword(user, pwd),
   };
@@ -134,3 +136,23 @@ func httpGet(url, user, pass string) (*http.Response, string, os.Error) {
 
   return r, full, err;
 }
+
+// Do an authenticated Post if we've called Authenticated, otherwise
+// just Post it without authentication
+func httpPost(url, user, pass, client, data string)
+             (*http.Response, os.Error) {
+  var r *http.Response;
+  var err os.Error;
+
+  body := bytes.NewBufferString(data);
+  bodyType := "application/x-www-form-urlencoded";
+
+  if user != "" && pass != "" {
+    r, err = authPost(url, user, pass, client, bodyType, body);
+  } else {
+    r, err = http.Post(url, bodyType, body);
+  }
+
+  return r, err;
+}
+
