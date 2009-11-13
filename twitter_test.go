@@ -26,8 +26,8 @@ func TestStatusWellFormed(t *testing.T) {
   status := make([]Status, 2);
   var id int64 = kId;
 
-  statusChan, _ := api.GetStatusAsync(kId);
-  status[1], _ = api.GetStatus(kId);
+  statusChan := api.GetStatusAsync(kId);
+  status[1] = api.GetStatus(kId);
   status[0] = <-statusChan;
 
   if !StatusEqual(status[0], status[1]) {

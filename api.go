@@ -53,9 +53,10 @@ func (self TwitterError) String() string {
   return self.error;
 }
 
+// Creates and initializes new Api objec
 func NewApi() *Api {
   api := new(Api);
-  api.Init();
+  api.init();
   return api;
 }
 
@@ -64,35 +65,65 @@ func (self *Api) isAuthed() bool {
   return self.user != "" && self.pass != "";
 }
 
+// Returns the last error sent to the error channel.
+// Calling this function pops the last error, subsequent calls will be nil
+// unless another error has occured.
 func (self *Api) GetLastError() os.Error {
   last := self.lastError;
   self.lastError = nil;
   return last;
 }
 
+// Sets the Twitter client header, aka the X-Twitter-Client http header on 
+// all POST operations
 func (self *Api) SetClientString(client string) {
   self.client = client;
 }
 
-func (self *Api) Init() {
+// Initializes a new Api object, called by NewApi()
+func (self *Api) init() {
   self.errors = make(chan os.Error, 16);
   self.client = kDefaultClient;
 }
 
+// Sets the username and password string for all subsequent authorized
+// HTTP requests
 func (self *Api) Authenticate(username, password string) {
   self.user = username;
   self.pass = password;
 }
 
+// Disable Twitter authentication, subsequent REST calls will not use
+// Authentication
 func (self *Api) Logout() {
   self.user = "";
   self.pass = "";
 }
 
+// Returns a channel which receives API errors. Can be used for logging
+// errors or pseudo-exception handling. Eg.
+//
+//    monitorErrors - listens to api errors and logs them    
+//
+//    func monitorErrors(quit chan bool, errors chan os.Error) {
+//      for ;; {
+//        select {
+//        case err := <-errors:
+//          fmt.Fprintf(os.Stderr, err.String());
+//          break;
+//        case <-quit:
+//          return;
+//        }
+//      }
+//    }
+//
 func (self *Api) GetErrorChannel() chan os.Error {
   return self.errors;
 }
 
+// Post a Twitter status message to the authenticated user
+//
+// The twitter.Api instance must be authenticated
 func (self *Api) PostUpdate(status string, inReplyToId int64) {
   url := fmt.Sprintf(QUERY_UPDATESTATUS, kTwitterUrl, kFormat);
   var data string;
@@ -112,6 +143,14 @@ func (self *Api) PostUpdate(status string, inReplyToId int64) {
   return;
 }
 
+// Gets a Twitter status given a status id
+//
+// The call is made asyncronously and returns instantly
+// returns a channel that receives the Status interface when the request
+// is completed
+//
+// The twitter.Api instance must be authenticated if the status message
+// is private
 func (self *Api) GetStatusAsync(id int64) chan Status {
   // make it a one-sized buffered channel so our goroutine doesn't sit
   // blocking waiting for the client to receive the data
@@ -120,6 +159,7 @@ func (self *Api) GetStatusAsync(id int64) chan Status {
   return response;
 }
 
+// Gets a Twitter status given a status id
 func (self *Api) GetStatus(id int64) Status {
   status := self.wrapGetStatus(id, nil);
 

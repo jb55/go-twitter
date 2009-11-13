@@ -1,0 +1,156 @@
+<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+
+	<!-- PackageName is printed as title by the top-level template -->
+		<p><code>import "twitter"</code></p>
+	<p>
+Copyright 2009 Bill Casarin &lt;billcasarin@gmail.com&gt;
+</p>
+<p>
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+</p>
+<pre>http://www.apache.org/licenses/LICENSE-2.0
+</pre>
+<p>
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+</p>
+
+			<p>
+			<h4>Package files</h4>
+			<span style="font-size:90%">
+				<a href="../api.go">api.go</a>
+				<a href="../http_auth.go">http_auth.go</a>
+				<a href="../status.go">status.go</a>
+			</span>
+			</p>
+		<h2>Constants</h2>
+			
+			<pre><a id="L34"></a>const (
+    <a id="L35"></a>QUERY_GETSTATUS    = &#34;%sstatuses/show/%d.%s&#34;;
+    <a id="L36"></a>QUERY_UPDATESTATUS = &#34;%sstatuses/update/update.%s&#34;;
+<a id="L37"></a>)</pre>
+			<h2>type <a href="../api.go#L43"><a id="L43"></a>Api</a></h2>
+			
+			<p><pre><a id="L43"></a>type Api struct {
+    // contains unexported fields
+<a id="L49"></a>}</pre></p>
+				<h3>func <a href="../api.go#L57">NewApi</a></h3>
+				<p><code><a id="L57"></a>func NewApi() *Api</code></p>
+				<p>
+Creates and initializes new Api objec
+</p>
+
+				<h3>func (<a id="L91"></a>*Api) <a href="../api.go#L91">Authenticate</a></h3>
+				<p><code><a id="L91"></a>func (self *Api) Authenticate(username, password string)</code></p>
+				<p>
+Sets the username and password string for all subsequent authorized
+HTTP requests
+</p>
+
+				<h3>func (<a id="L120"></a>*Api) <a href="../api.go#L120">GetErrorChannel</a></h3>
+				<p><code><a id="L120"></a>func (self *Api) GetErrorChannel() chan os.Error</code></p>
+				<p>
+Returns a channel which receives API errors. Can be used for logging
+errors or pseudo-exception handling. Eg.
+</p>
+<pre>monitorErrors - listens to api errors and logs them
+
+func monitorErrors(quit chan bool, errors chan os.Error) {
+  for ;; {
+    select {
+    case err := &lt;-errors:
+      fmt.Fprintf(os.Stderr, err.String());
+      break;
+    case &lt;-quit:
+      return;
+    }
+  }
+}
+</pre>
+
+				<h3>func (<a id="L71"></a>*Api) <a href="../api.go#L71">GetLastError</a></h3>
+				<p><code><a id="L71"></a>func (self *Api) GetLastError() os.Error</code></p>
+				<p>
+Returns the last error sent to the error channel.
+Calling this function pops the last error, subsequent calls will be nil
+unless another error has occured.
+</p>
+
+				<h3>func (<a id="L163"></a>*Api) <a href="../api.go#L163">GetStatus</a></h3>
+				<p><code><a id="L163"></a>func (self *Api) GetStatus(id int64) Status</code></p>
+				<p>
+Gets a Twitter status given a status id
+</p>
+
+				<h3>func (<a id="L154"></a>*Api) <a href="../api.go#L154">GetStatusAsync</a></h3>
+				<p><code><a id="L154"></a>func (self *Api) GetStatusAsync(id int64) chan Status</code></p>
+				<p>
+Gets a Twitter status given a status id
+</p>
+<p>
+The call is made asyncronously and returns instantly
+returns a channel that receives the Status interface when the request
+is completed
+</p>
+<p>
+The twitter.Api instance must be authenticated if the status message
+is private
+</p>
+
+				<h3>func (<a id="L98"></a>*Api) <a href="../api.go#L98">Logout</a></h3>
+				<p><code><a id="L98"></a>func (self *Api) Logout()</code></p>
+				<p>
+Disable Twitter authentication, subsequent REST calls will not use
+Authentication
+</p>
+
+				<h3>func (<a id="L127"></a>*Api) <a href="../api.go#L127">PostUpdate</a></h3>
+				<p><code><a id="L127"></a>func (self *Api) PostUpdate(status string, inReplyToId int64)</code></p>
+				<p>
+Post a Twitter status message to the authenticated user
+</p>
+<p>
+The twitter.Api instance must be authenticated
+</p>
+
+				<h3>func (<a id="L79"></a>*Api) <a href="../api.go#L79">SetClientString</a></h3>
+				<p><code><a id="L79"></a>func (self *Api) SetClientString(client string)</code></p>
+				<p>
+Sets the Twitter client header, aka the X-Twitter-Client http header on
+all POST operations
+</p>
+
+			<h2>type <a href="../status.go#L21"><a id="L21"></a>Status</a></h2>
+			
+			<p><pre><a id="L21"></a>type Status interface {
+    <a id="L22"></a>AsJsonString() string;
+    <a id="L23"></a>GetCreatedAt() string;
+    <a id="L24"></a>GetCreatedAtInSeconds() int;
+    <a id="L25"></a>GetFavorited() bool;
+    <a id="L26"></a>GetId() int64;
+    <a id="L27"></a>GetText() string;
+    <a id="L28"></a>GetInReplyToScreenName() string;
+    <a id="L29"></a>GetInReplyToStatusId() int64;
+    <a id="L30"></a>GetInReplyToUserId() int;
+    <a id="L31"></a>GetNow() int;
+<a id="L32"></a>}</pre></p>
+			<h2>type <a href="../api.go#L39"><a id="L39"></a>TwitterError</a></h2>
+			
+			<p><pre><a id="L39"></a>type TwitterError struct {
+    // contains unexported fields
+<a id="L41"></a>}</pre></p>
+				<h3>func (<a id="L52"></a>TwitterError) <a href="../api.go#L52">String</a></h3>
+				<p><code><a id="L52"></a>func (self TwitterError) String() string</code></p>
+				<p>
+type that satisfies the os.Error interface
+</p>
+

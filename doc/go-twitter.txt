@@ -1,0 +1,110 @@
+PACKAGE
+
+package twitter
+import "twitter"
+
+Copyright 2009 Bill Casarin <billcasarin@gmail.com>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+
+CONSTANTS
+
+const (
+    QUERY_GETSTATUS    = "%sstatuses/show/%d.%s";
+    QUERY_UPDATESTATUS = "%sstatuses/update/update.%s";
+)
+
+
+TYPES
+
+type Api struct {
+    // contains unexported fields
+}
+
+func NewApi() *Api
+Creates and initializes new Api objec
+
+func (self *Api) Authenticate(username, password string)
+Sets the username and password string for all subsequent authorized
+HTTP requests
+
+func (self *Api) GetErrorChannel() chan os.Error
+Returns a channel which receives API errors. Can be used for logging
+errors or pseudo-exception handling. Eg.
+
+   monitorErrors - listens to api errors and logs them
+
+   func monitorErrors(quit chan bool, errors chan os.Error) {
+     for ;; {
+       select {
+       case err := <-errors:
+         fmt.Fprintf(os.Stderr, err.String());
+         break;
+       case <-quit:
+         return;
+       }
+     }
+   }
+
+func (self *Api) GetLastError() os.Error
+Returns the last error sent to the error channel.
+Calling this function pops the last error, subsequent calls will be nil
+unless another error has occured.
+
+func (self *Api) GetStatus(id int64) Status
+Gets a Twitter status given a status id
+
+func (self *Api) GetStatusAsync(id int64) chan Status
+Gets a Twitter status given a status id
+
+The call is made asyncronously and returns instantly
+returns a channel that receives the Status interface when the request
+is completed
+
+The twitter.Api instance must be authenticated if the status message
+is private
+
+func (self *Api) Logout()
+Disable Twitter authentication, subsequent REST calls will not use
+Authentication
+
+func (self *Api) PostUpdate(status string, inReplyToId int64)
+Post a Twitter status message to the authenticated user
+
+The twitter.Api instance must be authenticated
+
+func (self *Api) SetClientString(client string)
+Sets the Twitter client header, aka the X-Twitter-Client http header on
+all POST operations
+
+type Status interface {
+    AsJsonString() string;
+    GetCreatedAt() string;
+    GetCreatedAtInSeconds() int;
+    GetFavorited() bool;
+    GetId() int64;
+    GetText() string;
+    GetInReplyToScreenName() string;
+    GetInReplyToStatusId() int64;
+    GetInReplyToUserId() int;
+    GetNow() int;
+}
+
+type TwitterError struct {
+    // contains unexported fields
+}
+
+func (self TwitterError) String() string
+type that satisfies the os.Error interface
+
