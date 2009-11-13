@@ -27,13 +27,15 @@ const (
   kDefaultClient = "go-twitter";
   kFormat = "json";
   kErr = "GoTwitter Error: ";
-  kWarn = "GoTwitter Warning: ";l
+  kWarn = "GoTwitter Warning: ";
+  kDefaultTimelineAlloc = 20;
 )
 
 const (
   QUERY_GETSTATUS = "%sstatuses/show/%d.%s";
   QUERY_UPDATESTATUS = "%sstatuses/update/update.%s";
   QUERY_PUBLICTIMELINE = "%sstatuses/public_timeline.%s";
+  QUERY_USERTIMELINE = "%sstatuses/user_timeline.%s";
 )
 
 type TwitterError struct {
@@ -77,13 +79,31 @@ func (self *Api) GetLastError() os.Error {
 // Retrieves the public timeline as a slice of Status objects
 func (self *Api) GetPublicTimeline() []Status {
   url := fmt.Sprintf(QUERY_PUBLICTIMELINE, kTwitterUrl, kFormat);
+  timeline := self.getTimeline(url, 0);
+
+  return timeline;
+}
+
+// Retrieves the currently authorized user's 
+// timeline as a slice of Status objects
+func (self *Api) GetUserTimeline() []Status {
+  url := fmt.Sprintf(QUERY_USERTIMELINE, kTwitterUrl, kFormat);
+  timeline := self.getTimeline(url, 0);
+
+  return timeline;
+}
+
+func (self *Api) getTimeline(url string, numItems int) []Status {
   var timelineDummy tTwitterTimelineDummy;
   var timeline []Status;
+  if numItems == 0 {
+    numItems = kDefaultTimelineAlloc;
+  }
 
   // Unmarshal currently has a bug, it doesn't grow the
   // slice properly. Might as well allocate 20 since that's
   // how many we're going to get back anyways
-  timelineDummy.Object = make([]tTwitterStatus, 20);
+  timelineDummy.Object = make([]tTwitterStatus, numItems);
 
   jsonString := self.getJsonFromUrl(url);
   json.Unmarshal(jsonString, &timelineDummy);

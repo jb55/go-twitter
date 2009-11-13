@@ -24,6 +24,7 @@ const (
     QUERY_GETSTATUS      = "%sstatuses/show/%d.%s";
     QUERY_UPDATESTATUS   = "%sstatuses/update/update.%s";
     QUERY_PUBLICTIMELINE = "%sstatuses/public_timeline.%s";
+    QUERY_USERTIMELINE   = "%sstatuses/user_timeline.%s";
 )
 
 
@@ -78,6 +79,10 @@ is completed
 
 The twitter.Api instance must be authenticated if the status message
 is private
+
+func (self *Api) GetUserTimeline() []Status
+Retrieves the currently authorized user's
+timeline as a slice of Status objects
 
 func (self *Api) Logout()
 Disable Twitter authentication, subsequent REST calls will not use

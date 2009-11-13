@@ -23,7 +23,7 @@ func main() {
 
   api.Authenticate("jb55", "");
   statusChan := api.GetStatusAsync(5641609144);
-  statuses := api.GetPublicTimeline();
+  statuses := api.GetUserTimeline();
   for i, status := range statuses {
     fmt.Printf("#%d: %s\n", i, status.GetText());
   }
