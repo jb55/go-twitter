@@ -29,15 +29,22 @@ const (
   kErr = "GoTwitter Error: ";
   kWarn = "GoTwitter Warning: ";
   kDefaultTimelineAlloc = 20;
-)
 
-const (
   _QUERY_GETSTATUS = "%sstatuses/show/%d.%s";
   _QUERY_UPDATESTATUS = "%sstatuses/update/update.%s";
   _QUERY_PUBLICTIMELINE = "%sstatuses/public_timeline.%s";
   _QUERY_USERTIMELINE = "%sstatuses/user_timeline.%s";
   _QUERY_REPLIES = "%sstatuses/mentions.%s";
   _QUERY_FRIENDSTIMELINE = "%sstatuses/friends_timeline.%s";
+)
+
+const (
+  _CHAN_STATUS = iota;
+  _CHAN_SLICESTATUS;
+  _CHAN_USER;
+  _CHAN_SLICEUSER;
+  _CHAN_BOOL;
+  _CHAN_ERROR;
 )
 
 type TwitterError struct {
@@ -86,12 +93,7 @@ func (self *Api) HasErrors() bool {
 
 // Retrieves the public timeline as a slice of Status objects
 func (self *Api) GetPublicTimeline() chan []Status {
-  var responseChannel chan []Status;
-  if self.receiveChannel == nil {
-    responseChannel = make(chan []Status, 1);
-  } else {
-    responseChannel = self.receiveChannel.(chan []Status);
-  }
+  responseChannel := self.buildRespChannel(_CHAN_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_PUBLICTIMELINE, kTwitterUrl, kFormat);
   go self.goGetStatuses(url, responseChannel);
@@ -102,12 +104,7 @@ func (self *Api) GetPublicTimeline() chan []Status {
 // Retrieves the currently authorized user's 
 // timeline as a slice of Status objects
 func (self *Api) GetUserTimeline() chan []Status {
-  var responseChannel chan []Status;
-  if self.receiveChannel == nil {
-    responseChannel = make(chan []Status, 1);
-  } else {
-    responseChannel = self.receiveChannel.(chan []Status);
-  }
+  responseChannel := self.buildRespChannel(_CHAN_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_USERTIMELINE, kTwitterUrl, kFormat);
   go self.goGetStatuses(url, responseChannel);
@@ -119,12 +116,7 @@ func (self *Api) GetUserTimeline() chan []Status {
 // that user's friends. This is the equivalent of /timeline/home on the Web.
 // Returns the statuses as a slice of Status objects
 func (self *Api) GetFriendsTimeline() chan []Status {
-  var responseChannel chan []Status;
-  if self.receiveChannel == nil {
-    responseChannel = make(chan []Status, 1);
-  } else {
-    responseChannel = self.receiveChannel.(chan []Status);
-  }
+  responseChannel := self.buildRespChannel(_CHAN_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_FRIENDSTIMELINE, kTwitterUrl, kFormat);
   go self.goGetStatuses(url, responseChannel);
@@ -135,12 +127,7 @@ func (self *Api) GetFriendsTimeline() chan []Status {
 // Returns the 20 most recent mentions for the authenticated user
 // Returns the statuses as a slice of Status objects
 func (self *Api) GetReplies() chan []Status {
-  var responseChannel chan []Status;
-  if self.receiveChannel == nil {
-    responseChannel = make(chan []Status, 1);
-  } else {
-    responseChannel = self.receiveChannel.(chan []Status);
-  }
+  responseChannel := self.buildRespChannel(_CHAN_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_REPLIES, kTwitterUrl, kFormat);
   go self.goGetStatuses(url, responseChannel);
@@ -149,8 +136,30 @@ func (self *Api) GetReplies() chan []Status {
 
 // TODO: Use reflection to reduce code duplication 
 // when making the response channel
-func (self *Api) buildResponseChannel() interface {} {
-  return 1;
+func (self *Api) buildRespChannel(channelType int) interface {} {
+  const size = 1;
+
+  if self.receiveChannel != nil {
+    return self.receiveChannel;
+  }
+
+  switch(channelType) {
+  case _CHAN_STATUS:
+    return make(chan Status, size);
+  case _CHAN_SLICESTATUS:
+    return make(chan []Status, size);
+  case _CHAN_USER:
+    return make(chan User, size);
+  case _CHAN_SLICEUSER:
+    return make(chan []User, size);
+  case _CHAN_BOOL:
+    return make(chan bool, size);
+  case _CHAN_ERROR:
+    return make(chan os.Error, size);
+  }
+
+  self.reportError("Invalid channel type");
+  return nil;
 }
 
 func (self *Api) goGetStatuses(url string, responseChannel chan []Status) {
@@ -168,7 +177,11 @@ func (self *Api) getStatuses(url string) []Status {
   timeline = make([]Status, dummyLen);
 
   for i := 0; i < dummyLen; i++ {
-    timeline[i] = &timelineDummy.Object[i];
+    status := &timelineDummy.Object[i];
+    timeline[i] = status;
+    if err := status.GetError(); err != "" {
+      self.reportError(err);
+    }
   }
 
   return timeline;
@@ -226,12 +239,7 @@ func (self *Api) GetErrorChannel() chan os.Error {
 //
 // The twitter.Api instance must be authenticated
 func (self *Api) PostUpdate(status string, inReplyToId int64) chan bool  {
-  var responseChannel chan bool;
-  if self.receiveChannel == nil {
-    responseChannel = make(chan bool, 1);
-  } else {
-    responseChannel = self.receiveChannel.(chan bool);
-  }
+  responseChannel := self.buildRespChannel(_CHAN_BOOL).(chan bool);
 
   go self.goPostUpdate(status, inReplyToId, responseChannel);
   return responseChannel;
@@ -266,12 +274,7 @@ func (self *Api) goPostUpdate(status string, inReplyToId int64,
 // The twitter.Api instance must be authenticated if the status message
 // is private
 func (self *Api) GetStatus(id int64) chan Status {
-  var responseChannel chan Status;
-  if self.receiveChannel == nil {
-    responseChannel = make(chan Status, 1);
-  } else {
-    responseChannel = self.receiveChannel.(chan Status);
-  }
+  responseChannel := self.buildRespChannel(_CHAN_STATUS).(chan Status);
 
   go self.goGetStatus(id, responseChannel);
   return responseChannel;
@@ -288,12 +291,14 @@ func (self *Api) goGetStatus(id int64, response chan Status) {
   json.Unmarshal(jsonString, &status);
 
   s := &(status.Object);
+  if err := s.GetError(); err != "" {
+    self.reportError(err);
+  }
 
   response <- s;
 }
 
 func (self *Api) reportError(error string) {
-  error += "\n";
   err := &TwitterError{error};
   self.lastError = err;
   ok := self.errors <- err;
@@ -303,7 +308,7 @@ func (self *Api) reportError(error string) {
     ok := self.errors <- err;
     if !ok {
       // Yo dawg
-      fmt.Fprintf(os.Stderr, kErr + "Error adding error to error buffer\n");
+      fmt.Fprintf(os.Stderr, "Error adding error to error buffer\n");
     }
   }
 }

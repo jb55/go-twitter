@@ -23,8 +23,8 @@ func main() {
   var startId int64 = 5641609144;
 
   api := twitter.NewApi();
+  errors := api.GetErrorChannel();
   receiveChannel := make(chan twitter.Status, nIds);
-
   api.SetReceiveChannel(receiveChannel);
 
   for i := 0; i < nIds; i++ {
@@ -35,6 +35,10 @@ func main() {
   for i := 0; i < nIds; i++ {
     // reads in status messages as they come in
     fmt.Printf("Status #%d: %v\n", i, <-receiveChannel);
+  }
+
+  for i := 0; api.HasErrors(); i++ {
+    fmt.Printf("Error #%d: %s\n", i, <-errors);
   }
 
   //api.PostUpdate("Testing my Go twitter library", 0);

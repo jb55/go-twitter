@@ -34,26 +34,26 @@ limitations under the License.
 				<a href="../util.go">util.go</a>
 			</span>
 			</p>
-			<h2>type <a href="../api.go#L47"><a id="L47"></a>Api</a></h2>
+			<h2>type <a href="../api.go#L54"><a id="L54"></a>Api</a></h2>
 			
-			<p><pre><a id="L47"></a>type Api struct {
+			<p><pre><a id="L54"></a>type Api struct {
     // contains unexported fields
-<a id="L53"></a>}</pre></p>
-				<h3>func <a href="../api.go#L61">NewApi</a></h3>
-				<p><code><a id="L61"></a>func NewApi() *Api</code></p>
+<a id="L61"></a>}</pre></p>
+				<h3>func <a href="../api.go#L69">NewApi</a></h3>
+				<p><code><a id="L69"></a>func NewApi() *Api</code></p>
 				<p>
 Creates and initializes new Api objec
 </p>
 
-				<h3>func (<a id="L152"></a>*Api) <a href="../api.go#L152">Authenticate</a></h3>
-				<p><code><a id="L152"></a>func (self *Api) Authenticate(username, password string)</code></p>
+				<h3>func (<a id="L205"></a>*Api) <a href="../api.go#L205">Authenticate</a></h3>
+				<p><code><a id="L205"></a>func (self *Api) Authenticate(username, password string)</code></p>
 				<p>
 Sets the username and password string for all subsequent authorized
 HTTP requests
 </p>
 
-				<h3>func (<a id="L181"></a>*Api) <a href="../api.go#L181">GetErrorChannel</a></h3>
-				<p><code><a id="L181"></a>func (self *Api) GetErrorChannel() chan os.Error</code></p>
+				<h3>func (<a id="L234"></a>*Api) <a href="../api.go#L234">GetErrorChannel</a></h3>
+				<p><code><a id="L234"></a>func (self *Api) GetErrorChannel() chan os.Error</code></p>
 				<p>
 Returns a channel which receives API errors. Can be used for logging
 errors or pseudo-exception handling. Eg.
@@ -73,43 +73,37 @@ func monitorErrors(quit chan bool, errors chan os.Error) {
 }
 </pre>
 
-				<h3>func (<a id="L106"></a>*Api) <a href="../api.go#L106">GetFriendsTimeline</a></h3>
-				<p><code><a id="L106"></a>func (self *Api) GetFriendsTimeline() []Status</code></p>
+				<h3>func (<a id="L118"></a>*Api) <a href="../api.go#L118">GetFriendsTimeline</a></h3>
+				<p><code><a id="L118"></a>func (self *Api) GetFriendsTimeline() chan []Status</code></p>
 				<p>
 Returns the 20 most recent statuses posted by the authenticating user and
 that user&#39;s friends. This is the equivalent of /timeline/home on the Web.
 Returns the statuses as a slice of Status objects
 </p>
 
-				<h3>func (<a id="L75"></a>*Api) <a href="../api.go#L75">GetLastError</a></h3>
-				<p><code><a id="L75"></a>func (self *Api) GetLastError() os.Error</code></p>
+				<h3>func (<a id="L83"></a>*Api) <a href="../api.go#L83">GetLastError</a></h3>
+				<p><code><a id="L83"></a>func (self *Api) GetLastError() os.Error</code></p>
 				<p>
 Returns the last error sent to the error channel.
 Calling this function pops the last error, subsequent calls will be nil
 unless another error has occured.
 </p>
 
-				<h3>func (<a id="L87"></a>*Api) <a href="../api.go#L87">GetPublicTimeline</a></h3>
-				<p><code><a id="L87"></a>func (self *Api) GetPublicTimeline() []Status</code></p>
+				<h3>func (<a id="L95"></a>*Api) <a href="../api.go#L95">GetPublicTimeline</a></h3>
+				<p><code><a id="L95"></a>func (self *Api) GetPublicTimeline() chan []Status</code></p>
 				<p>
 Retrieves the public timeline as a slice of Status objects
 </p>
 
-				<h3>func (<a id="L115"></a>*Api) <a href="../api.go#L115">GetReplies</a></h3>
-				<p><code><a id="L115"></a>func (self *Api) GetReplies() []Status</code></p>
+				<h3>func (<a id="L129"></a>*Api) <a href="../api.go#L129">GetReplies</a></h3>
+				<p><code><a id="L129"></a>func (self *Api) GetReplies() chan []Status</code></p>
 				<p>
 Returns the 20 most recent mentions for the authenticated user
 Returns the statuses as a slice of Status objects
 </p>
 
-				<h3>func (<a id="L224"></a>*Api) <a href="../api.go#L224">GetStatus</a></h3>
-				<p><code><a id="L224"></a>func (self *Api) GetStatus(id int64) Status</code></p>
-				<p>
-Gets a Twitter status given a status id
-</p>
-
-				<h3>func (<a id="L215"></a>*Api) <a href="../api.go#L215">GetStatusAsync</a></h3>
-				<p><code><a id="L215"></a>func (self *Api) GetStatusAsync(id int64) chan Status</code></p>
+				<h3>func (<a id="L276"></a>*Api) <a href="../api.go#L276">GetStatus</a></h3>
+				<p><code><a id="L276"></a>func (self *Api) GetStatus(id int64) chan Status</code></p>
 				<p>
 Gets a Twitter status given a status id
 </p>
@@ -123,28 +117,28 @@ The twitter.Api instance must be authenticated if the status message
 is private
 </p>
 
-				<h3>func (<a id="L96"></a>*Api) <a href="../api.go#L96">GetUserTimeline</a></h3>
-				<p><code><a id="L96"></a>func (self *Api) GetUserTimeline() []Status</code></p>
+				<h3>func (<a id="L106"></a>*Api) <a href="../api.go#L106">GetUserTimeline</a></h3>
+				<p><code><a id="L106"></a>func (self *Api) GetUserTimeline() chan []Status</code></p>
 				<p>
 Retrieves the currently authorized user&#39;s
 timeline as a slice of Status objects
 </p>
 
-				<h3>func (<a id="L82"></a>*Api) <a href="../api.go#L82">HasErrors</a></h3>
-				<p><code><a id="L82"></a>func (self *Api) HasErrors() bool</code></p>
+				<h3>func (<a id="L90"></a>*Api) <a href="../api.go#L90">HasErrors</a></h3>
+				<p><code><a id="L90"></a>func (self *Api) HasErrors() bool</code></p>
 				<p>
 Checks to see if there are any errors in the error channel
 </p>
 
-				<h3>func (<a id="L159"></a>*Api) <a href="../api.go#L159">Logout</a></h3>
-				<p><code><a id="L159"></a>func (self *Api) Logout()</code></p>
+				<h3>func (<a id="L212"></a>*Api) <a href="../api.go#L212">Logout</a></h3>
+				<p><code><a id="L212"></a>func (self *Api) Logout()</code></p>
 				<p>
 Disable Twitter authentication, subsequent REST calls will not use
 Authentication
 </p>
 
-				<h3>func (<a id="L188"></a>*Api) <a href="../api.go#L188">PostUpdate</a></h3>
-				<p><code><a id="L188"></a>func (self *Api) PostUpdate(status string, inReplyToId int64)</code></p>
+				<h3>func (<a id="L241"></a>*Api) <a href="../api.go#L241">PostUpdate</a></h3>
+				<p><code><a id="L241"></a>func (self *Api) PostUpdate(status string, inReplyToId int64) chan bool</code></p>
 				<p>
 Post a Twitter status message to the authenticated user
 </p>
@@ -152,13 +146,21 @@ Post a Twitter status message to the authenticated user
 The twitter.Api instance must be authenticated
 </p>
 
-				<h3>func (<a id="L140"></a>*Api) <a href="../api.go#L140">SetClientString</a></h3>
-				<p><code><a id="L140"></a>func (self *Api) SetClientString(client string)</code></p>
+				<h3>func (<a id="L192"></a>*Api) <a href="../api.go#L192">SetClientString</a></h3>
+				<p><code><a id="L192"></a>func (self *Api) SetClientString(client string)</code></p>
 				<p>
 Sets the Twitter client header, aka the X-Twitter-Client http header on
 all POST operations
 </p>
 
+				<h3>func (<a id="L283"></a>*Api) <a href="../api.go#L283">SetReceiveChannel</a></h3>
+				<p><code><a id="L283"></a>func (self *Api) SetReceiveChannel(receiveChannel interface{})</code></p>
+				
+			<h2>type <a href="../status.go#L30"><a id="L30"></a>ErrorSource</a></h2>
+			
+			<p><pre><a id="L30"></a>type ErrorSource interface {
+    <a id="L31"></a>GetError() string;
+<a id="L32"></a>}</pre></p>
 			<h2>type <a href="../status.go#L18"><a id="L18"></a>Status</a></h2>
 			
 			<p><pre><a id="L18"></a>type Status interface {
@@ -172,13 +174,13 @@ all POST operations
     <a id="L26"></a>GetInReplyToUserId() int64;
     <a id="L27"></a>GetNow() int;
 <a id="L28"></a>}</pre></p>
-			<h2>type <a href="../api.go#L43"><a id="L43"></a>TwitterError</a></h2>
+			<h2>type <a href="../api.go#L50"><a id="L50"></a>TwitterError</a></h2>
 			
-			<p><pre><a id="L43"></a>type TwitterError struct {
+			<p><pre><a id="L50"></a>type TwitterError struct {
     // contains unexported fields
-<a id="L45"></a>}</pre></p>
-				<h3>func (<a id="L56"></a>TwitterError) <a href="../api.go#L56">String</a></h3>
-				<p><code><a id="L56"></a>func (self TwitterError) String() string</code></p>
+<a id="L52"></a>}</pre></p>
+				<h3>func (<a id="L64"></a>TwitterError) <a href="../api.go#L64">String</a></h3>
+				<p><code><a id="L64"></a>func (self TwitterError) String() string</code></p>
 				<p>
 type that satisfies the os.Error interface
 </p>

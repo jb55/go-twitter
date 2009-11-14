@@ -29,7 +29,7 @@ type tTwitterUser struct {
   Name string;
   Screen_name string;
   Location string;
-  Description stirng;
+  Description string;
   Profile_image_url string;
   Profile_background_title bool;
   Profile_background_image_url string;
@@ -40,11 +40,11 @@ type tTwitterUser struct {
   Utc_offset int;
   Timezone string;
   Url string;
-  status status; // Don't let Unmarshal touch this one
+  status Status; // Don't let Unmarshal touch this one
   Statuses_count int;
   Followers_count int;
   Friends_count int;
-  Favourites_count int;
+  Favorites_count int;
 }
 
 func (self *tTwitterUser) GetId() int64 {
@@ -68,7 +68,7 @@ func (self *tTwitterUser) GetDescription() string {
 }
 
 func (self *tTwitterUser) GetProfileImageUrl() string {
-  return self.Profile_img_url;
+  return self.Profile_image_url;
 }
 
 func (self *tTwitterUser) GetProfileBackgroundTitle() bool {
@@ -77,10 +77,6 @@ func (self *tTwitterUser) GetProfileBackgroundTitle() bool {
 
 func (self *tTwitterUser) GetProfileBackgroundImageUrl() string {
   return self.Profile_background_image_url;
-}
-
-func (self *tTwitterUser) GetProfileBackgroundColor() string {
-  return self.Profile_background_color;
 }
 
 func (self *tTwitterUser) GetProfileLinkColor() string {
@@ -95,7 +91,7 @@ func (self *tTwitterUser) GetProtected() bool {
   return self.Protected;
 }
 
-func (self *tTwitterUser) GetUtcOffset() string {
+func (self *tTwitterUser) GetUtcOffset() int {
   return self.Utc_offset;
 }
 
@@ -109,9 +105,21 @@ func (self *tTwitterUser) GetURL() string {
 
 func (self *tTwitterUser) Status() Status {
   // TODO: When to load this?
-  return self.Status;
+  return self.status;
 }
 
-func (self *tTwitterUser) GetName() string {
-  return self.Name;
+func (self *tTwitterUser) GetStatusesCount() int {
+  return self.Statuses_count;
+}
+
+func (self *tTwitterUser) GetFollowersCount() int {
+  return self.Followers_count;
+}
+
+func (self *tTwitterUser) GetFriendsCount() int {
+  return self.Friends_count;
+}
+
+func (self *tTwitterUser) GetFavoritesCount() int {
+  return self.Favorites_count;
 }

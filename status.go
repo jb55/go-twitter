@@ -27,6 +27,10 @@ type Status interface {
   GetNow() int;
 }
 
+type ErrorSource interface {
+  GetError() string;
+}
+
 // Our internal status struct
 // the naming is odd so that
 // json.Unmarshal can do its thing properly
@@ -49,6 +53,10 @@ type tTwitterStatusDummy struct {
 
 type tTwitterTimelineDummy struct {
   Object []tTwitterStatus;
+}
+
+func (self *tTwitterStatus) GetError() string {
+  return self.Error;
 }
 
 func (self *tTwitterStatus) GetCreatedAt() string {
