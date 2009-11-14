@@ -1,5 +1,5 @@
 
-include Make.$(GOARCH)
+include $(GOROOT)/src/Make.$(GOARCH)
 
 TARG=twitter
 GOFILES=\
@@ -9,7 +9,7 @@ GOFILES=\
 	util.go\
 	http_auth.go
 
-include Make.pkg
+include $(GOROOT)/src/Make.pkg
 
 .PHONY: doc
 

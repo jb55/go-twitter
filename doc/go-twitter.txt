@@ -98,10 +98,6 @@ all POST operations
 
 func (self *Api) SetReceiveChannel(receiveChannel interface{})
 
-type ErrorSource interface {
-    GetError() string;
-}
-
 type Status interface {
     GetCreatedAt() string;
     GetCreatedAtInSeconds() int;

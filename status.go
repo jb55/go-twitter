@@ -27,7 +27,7 @@ type Status interface {
   GetNow() int;
 }
 
-type ErrorSource interface {
+type errorSource interface {
   GetError() string;
 }
 
