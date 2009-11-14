@@ -50,6 +50,7 @@ type Api struct {
   errors chan os.Error;
   lastError os.Error;
   client string;
+  receiveChannel interface{};
 }
 
 // type that satisfies the os.Error interface
@@ -84,38 +85,76 @@ func (self *Api) HasErrors() bool {
 }
 
 // Retrieves the public timeline as a slice of Status objects
-func (self *Api) GetPublicTimeline() []Status {
-  url := fmt.Sprintf(_QUERY_PUBLICTIMELINE, kTwitterUrl, kFormat);
-  statuses := self.getStatuses(url);
+func (self *Api) GetPublicTimeline() chan []Status {
+  var responseChannel chan []Status;
+  if self.receiveChannel == nil {
+    responseChannel = make(chan []Status, 1);
+  } else {
+    responseChannel = self.receiveChannel.(chan []Status);
+  }
 
-  return statuses;
+  url := fmt.Sprintf(_QUERY_PUBLICTIMELINE, kTwitterUrl, kFormat);
+  go self.goGetStatuses(url, responseChannel);
+
+  return responseChannel;
 }
 
 // Retrieves the currently authorized user's 
 // timeline as a slice of Status objects
-func (self *Api) GetUserTimeline() []Status {
-  url := fmt.Sprintf(_QUERY_USERTIMELINE, kTwitterUrl, kFormat);
-  statuses := self.getStatuses(url);
+func (self *Api) GetUserTimeline() chan []Status {
+  var responseChannel chan []Status;
+  if self.receiveChannel == nil {
+    responseChannel = make(chan []Status, 1);
+  } else {
+    responseChannel = self.receiveChannel.(chan []Status);
+  }
 
-  return statuses;
+  url := fmt.Sprintf(_QUERY_USERTIMELINE, kTwitterUrl, kFormat);
+  go self.goGetStatuses(url, responseChannel);
+
+  return responseChannel;
 }
 
 // Returns the 20 most recent statuses posted by the authenticating user and 
 // that user's friends. This is the equivalent of /timeline/home on the Web.
 // Returns the statuses as a slice of Status objects
-func (self *Api) GetFriendsTimeline() []Status {
-  url := fmt.Sprintf(_QUERY_FRIENDSTIMELINE, kTwitterUrl, kFormat);
-  statuses := self.getStatuses(url);
+func (self *Api) GetFriendsTimeline() chan []Status {
+  var responseChannel chan []Status;
+  if self.receiveChannel == nil {
+    responseChannel = make(chan []Status, 1);
+  } else {
+    responseChannel = self.receiveChannel.(chan []Status);
+  }
 
-  return statuses;
+  url := fmt.Sprintf(_QUERY_FRIENDSTIMELINE, kTwitterUrl, kFormat);
+  go self.goGetStatuses(url, responseChannel);
+
+  return responseChannel;
 }
 
 // Returns the 20 most recent mentions for the authenticated user
 // Returns the statuses as a slice of Status objects
-func (self *Api) GetReplies() []Status {
+func (self *Api) GetReplies() chan []Status {
+  var responseChannel chan []Status;
+  if self.receiveChannel == nil {
+    responseChannel = make(chan []Status, 1);
+  } else {
+    responseChannel = self.receiveChannel.(chan []Status);
+  }
+
   url := fmt.Sprintf(_QUERY_REPLIES, kTwitterUrl, kFormat);
-  statuses := self.getStatuses(url);
-  return statuses;
+  go self.goGetStatuses(url, responseChannel);
+  return responseChannel;
+}
+
+// TODO: Use reflection to reduce code duplication 
+// when making the response channel
+func (self *Api) buildResponseChannel() interface {} {
+  return 1;
+}
+
+func (self *Api) goGetStatuses(url string, responseChannel chan []Status) {
+  responseChannel <- self.getStatuses(url);
 }
 
 func (self *Api) getStatuses(url string) []Status {
@@ -144,6 +183,7 @@ func (self *Api) SetClientString(client string) {
 // Initializes a new Api object, called by NewApi()
 func (self *Api) init() {
   self.errors = make(chan os.Error, 16);
+  self.receiveChannel = nil;
   self.client = kDefaultClient;
 }
 
@@ -185,7 +225,20 @@ func (self *Api) GetErrorChannel() chan os.Error {
 // Post a Twitter status message to the authenticated user
 //
 // The twitter.Api instance must be authenticated
-func (self *Api) PostUpdate(status string, inReplyToId int64) {
+func (self *Api) PostUpdate(status string, inReplyToId int64) chan bool  {
+  var responseChannel chan bool;
+  if self.receiveChannel == nil {
+    responseChannel = make(chan bool, 1);
+  } else {
+    responseChannel = self.receiveChannel.(chan bool);
+  }
+
+  go self.goPostUpdate(status, inReplyToId, responseChannel);
+  return responseChannel;
+}
+
+func (self *Api) goPostUpdate(status string, inReplyToId int64,
+                              response chan bool) {
   url := fmt.Sprintf(_QUERY_UPDATESTATUS, kTwitterUrl, kFormat);
   var data string;
 
@@ -198,10 +251,10 @@ func (self *Api) PostUpdate(status string, inReplyToId int64) {
   _, err := httpPost(url, self.user, self.pass, self.client, data);
   if err != nil {
     self.reportError(kErr + err.String());
-    return;
+    response <- false;
   }
 
-  return;
+  response <- true;
 }
 
 // Gets a Twitter status given a status id
@@ -212,22 +265,23 @@ func (self *Api) PostUpdate(status string, inReplyToId int64) {
 //
 // The twitter.Api instance must be authenticated if the status message
 // is private
-func (self *Api) GetStatusAsync(id int64) chan Status {
-  // make it a one-sized buffered channel so our goroutine doesn't sit
-  // blocking waiting for the client to receive the data
-  response := make(chan Status, 1);
-  go self.wrapGetStatus(id, response);
-  return response;
+func (self *Api) GetStatus(id int64) chan Status {
+  var responseChannel chan Status;
+  if self.receiveChannel == nil {
+    responseChannel = make(chan Status, 1);
+  } else {
+    responseChannel = self.receiveChannel.(chan Status);
+  }
+
+  go self.goGetStatus(id, responseChannel);
+  return responseChannel;
 }
 
-// Gets a Twitter status given a status id
-func (self *Api) GetStatus(id int64) Status {
-  status := self.wrapGetStatus(id, nil);
-
-  return status;
+func (self *Api) SetReceiveChannel(receiveChannel interface{}) {
+  self.receiveChannel = receiveChannel;
 }
 
-func (self *Api) wrapGetStatus(id int64, response chan Status) Status {
+func (self *Api) goGetStatus(id int64, response chan Status) {
   url := fmt.Sprintf(_QUERY_GETSTATUS, kTwitterUrl, id, kFormat);
   var status tTwitterStatusDummy;
   jsonString := self.getJsonFromUrl(url);
@@ -235,12 +289,7 @@ func (self *Api) wrapGetStatus(id int64, response chan Status) Status {
 
   s := &(status.Object);
 
-  if response != nil {
-    response <- s;
-    return s;
-  }
-
-  return s;
+  response <- s;
 }
 
 func (self *Api) reportError(error string) {
@@ -253,6 +302,7 @@ func (self *Api) reportError(error string) {
     <-self.errors;
     ok := self.errors <- err;
     if !ok {
+      // Yo dawg
       fmt.Fprintf(os.Stderr, kErr + "Error adding error to error buffer\n");
     }
   }

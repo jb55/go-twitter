@@ -24,20 +24,11 @@ const kId = 5641609144;
 func TestStatusWellFormed(t *testing.T) {
   api := NewApi();
   errors := api.GetErrorChannel();
-  status := make([]Status, 2);
-  var id int64 = kId;
 
-  statusChan := api.GetStatusAsync(kId);
-  status[1] = api.GetStatus(kId);
-  status[0] = <-statusChan;
+  status := <-api.GetStatus(kId);
 
-  if !StatusEqual(status[0], status[1]) {
-    t.Errorf("GetStatusAsync(%d) != GetStatus(%d), expected ==", id, id);
-  }
-
-  s := status[0];
-  t.Logf("Status Struct: %v", s);
-  verifyValidStatus(s, t, 0);
+  t.Logf("Status Struct: %v", status);
+  verifyValidStatus(status, t, 0);
 
   getAllApiErrors(errors, t);
 }
@@ -45,7 +36,7 @@ func TestStatusWellFormed(t *testing.T) {
 func TestPublicTimeLineWellFormed(t *testing.T) {
   api := NewApi();
   errors := api.GetErrorChannel();
-  statuses := api.GetPublicTimeline();
+  statuses := <-api.GetPublicTimeline();
   length := len(statuses);
 
   if length <= 1 {

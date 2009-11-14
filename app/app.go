@@ -19,14 +19,23 @@ import "twitter"
 import "fmt"
 
 func main() {
-  api := twitter.NewApi();
+  const nIds = 10;
+  var startId int64 = 5641609144;
 
-  api.Authenticate("jb55", "");
-  statusChan := api.GetStatusAsync(5641609144);
-  statuses := api.GetFriendsTimeline();
-  for i, status := range statuses {
-    fmt.Printf("#%d: %s\n", i, status.GetText());
+  api := twitter.NewApi();
+  receiveChannel := make(chan twitter.Status, nIds);
+
+  api.SetReceiveChannel(receiveChannel);
+
+  for i := 0; i < nIds; i++ {
+    api.GetStatus(startId);
+    startId++;
   }
-  fmt.Printf("GetStatusAsync: %s\n", (<-statusChan).GetText());
+
+  for i := 0; i < nIds; i++ {
+    // reads in status messages as they come in
+    fmt.Printf("Status #%d: %v\n", i, <-receiveChannel);
+  }
+
   //api.PostUpdate("Testing my Go twitter library", 0);
 }
