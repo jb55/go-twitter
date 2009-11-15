@@ -17,6 +17,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+generic.go - a collection of hacks that wouldn't be needed if there were
+             generics
+
 
 TYPES
 
@@ -33,7 +36,7 @@ HTTP requests
 
 func (self *Api) GetErrorChannel() chan os.Error
 Returns a channel which receives API errors. Can be used for logging
-errors or pseudo-exception handling. Eg.
+errors.
 
    monitorErrors - listens to api errors and logs them
 
@@ -48,6 +51,18 @@ errors or pseudo-exception handling. Eg.
        }
      }
    }
+
+func (self *Api) GetFollowers(user interface{}, page int) chan []User
+Gets the followers for a given user represented by a slice
+of twitter.User instances
+
+user:
+ A user id or name to fetch the followers from. If this argument
+ is nil, then the followers are fetched from the authenticated user.
+ This paramater must be an int, int64, or string.
+
+page:
+ Not yet implemented
 
 func (self *Api) GetFriendsTimeline() chan []Status
 Returns the 20 most recent statuses posted by the authenticating user and
@@ -69,12 +84,11 @@ Returns the statuses as a slice of Status objects
 func (self *Api) GetStatus(id int64) chan Status
 Gets a Twitter status given a status id
 
-The call is made asyncronously and returns instantly
-returns a channel that receives the Status interface when the request
-is completed
-
 The twitter.Api instance must be authenticated if the status message
 is private
+
+Returns: a channel which receives a twitter.Status object when
+         the request is completed
 
 func (self *Api) GetUserTimeline() chan []Status
 Retrieves the currently authorized user's
@@ -92,11 +106,65 @@ Post a Twitter status message to the authenticated user
 
 The twitter.Api instance must be authenticated
 
+func (self *Api) SetCacheBackend(backend *CacheBackend)
+
 func (self *Api) SetClientString(client string)
 Sets the Twitter client header, aka the X-Twitter-Client http header on
 all POST operations
 
 func (self *Api) SetReceiveChannel(receiveChannel interface{})
+
+type Cache interface {
+    // Stores a value in the database, the key is determined
+    // by the GetId() function in the IdProvider interface
+    Store(data IdProvider);
+
+    // Checks to see if the cache contains a given key
+    HasId(id int64) bool;
+
+    // Gets a value from the cache
+    Get(id int64) IdProvider;
+
+    // Gets the time a given key was stored
+    GetTimeStored(id int64) int64;
+}
+
+type CacheBackend struct {
+    // contains unexported fields
+}
+
+func NewCacheBackend(user Cache, status Cache, expireTime int64) *CacheBackend
+Creates a custom cache backend
+
+func (self *CacheBackend) GetStatus(id int64) Status
+
+func (self *CacheBackend) GetUser(id int64) User
+
+func (self *CacheBackend) HasStatusExpired(id int64) bool
+
+func (self *CacheBackend) HasUserExpired(id int64) bool
+
+func (self *CacheBackend) StoreStatus(status Status)
+
+func (self *CacheBackend) StoreUser(user User)
+
+type IdProvider interface {
+    GetId() int64;
+}
+
+type MemoryCache struct {
+    // contains unexported fields
+}
+
+func NewMemoryCache() *MemoryCache
+
+func (self *MemoryCache) Get(id int64) IdProvider
+
+func (self *MemoryCache) GetTimeStored(id int64) int64
+
+func (self *MemoryCache) HasId(id int64) bool
+
+func (self *MemoryCache) Store(data IdProvider)
 
 type Status interface {
     GetCreatedAt() string;
@@ -108,6 +176,7 @@ type Status interface {
     GetInReplyToStatusId() int64;
     GetInReplyToUserId() int64;
     GetNow() int;
+    GetUser() User;
 }
 
 type TwitterError struct {
@@ -127,7 +196,6 @@ type User interface {
     GetProfileBackgroundTitle() bool;
     GetProfileBackgroundImageUrl() string;
     GetProfileSidebarFillColor() string;
-    GetProfileBackgroundColor() string;
     GetProfileLinkColor() string;
     GetProfileTextColor() string;
     GetProtected() bool;

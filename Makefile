@@ -6,6 +6,8 @@ GOFILES=\
 	api.go\
 	status.go\
 	user.go\
+	hacks.go\
+	cache.go\
 	util.go\
 	http_auth.go
 

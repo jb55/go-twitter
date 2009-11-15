@@ -1,3 +1,18 @@
+//
+// Copyright 2009 Bill Casarin <billcasarin@gmail.com>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package twitter
 
 type User interface {
@@ -10,7 +25,6 @@ type User interface {
   GetProfileBackgroundTitle() bool;
   GetProfileBackgroundImageUrl() string;
   GetProfileSidebarFillColor() string;
-  GetProfileBackgroundColor() string;
   GetProfileLinkColor() string;
   GetProfileTextColor() string;
   GetProtected() bool;
@@ -38,13 +52,22 @@ type tTwitterUser struct {
   Profile_text_color string;
   Protected bool;
   Utc_offset int;
-  Timezone string;
   Url string;
-  status Status; // Don't let Unmarshal touch this one
+  Timezone string;
+  Status *tTwitterStatus;
   Statuses_count int;
   Followers_count int;
   Friends_count int;
   Favorites_count int;
+  Error string;
+}
+
+func newEmptyTwitterUser() *tTwitterUser {
+  return new(tTwitterUser);
+}
+
+func (self *tTwitterUser) GetError() string {
+  return self.Error;
 }
 
 func (self *tTwitterUser) GetId() int64 {
@@ -75,6 +98,10 @@ func (self *tTwitterUser) GetProfileBackgroundTitle() bool {
   return self.Profile_background_title;
 }
 
+func (self *tTwitterUser) GetProfileSidebarFillColor() string {
+  return self.Profile_sidebar_fill_color;
+}
+
 func (self *tTwitterUser) GetProfileBackgroundImageUrl() string {
   return self.Profile_background_image_url;
 }
@@ -95,7 +122,7 @@ func (self *tTwitterUser) GetUtcOffset() int {
   return self.Utc_offset;
 }
 
-func (self *tTwitterUser) GetTimezone() string {
+func (self *tTwitterUser) GetTimeZone() string {
   return self.Timezone;
 }
 
@@ -103,9 +130,11 @@ func (self *tTwitterUser) GetURL() string {
   return self.Url;
 }
 
-func (self *tTwitterUser) Status() Status {
-  // TODO: When to load this?
-  return self.status;
+func (self *tTwitterUser) GetStatus() Status {
+  if self.Status == nil {
+    self.Status = newEmptyTwitterStatus();
+  }
+  return self.Status;
 }
 
 func (self *tTwitterUser) GetStatusesCount() int {

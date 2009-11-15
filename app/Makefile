@@ -1,4 +1,4 @@
-include ../Make.$(GOARCH)
+include $(GOROOT)/src/Make.$(GOARCH)
 
 all: app
 

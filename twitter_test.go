@@ -20,20 +20,31 @@ import "os"
 
 const kId = 5641609144;
 
-
-func TestStatusWellFormed(t *testing.T) {
+func TestValidStatus(t *testing.T) {
   api := NewApi();
   errors := api.GetErrorChannel();
 
   status := <-api.GetStatus(kId);
 
-  t.Logf("Status Struct: %v", status);
-  verifyValidStatus(status, t, 0);
+  verifyValidStatus(status, t);
+  verifyValidUser(status.GetUser(), t);
+  getAllApiErrors(errors, t);
+}
+
+func TestValidFollowerList(t *testing.T) {
+  api := NewApi();
+  errors := api.GetErrorChannel();
+  users := <-api.GetFollowers("jb55", 0);
+
+  for _, user := range users {
+    verifyValidUser(user, t);
+    verifyValidStatus(user.GetStatus(), t);
+  }
 
   getAllApiErrors(errors, t);
 }
 
-func TestPublicTimeLineWellFormed(t *testing.T) {
+func TestValidPublicTimeLine(t *testing.T) {
   api := NewApi();
   errors := api.GetErrorChannel();
   statuses := <-api.GetPublicTimeline();
@@ -48,8 +59,8 @@ func TestPublicTimeLineWellFormed(t *testing.T) {
   }
 
   t.Logf("Number of Statuses retrieved: %d", length);
-  for i, status := range statuses {
-    verifyValidStatus(status, t, i);
+  for _, status := range statuses {
+    verifyValidStatus(status, t);
   }
 
   getAllApiErrors(errors, t);
@@ -62,29 +73,19 @@ func authFromFile() {
   return;
 }
 
-func verifyValidStatus(s Status, t *testing.T, i int) {
-  const kFormat = "Status Struct #%d: %v";
-  var numErrors int = 0;
+func verifyValidUser(u User, t *testing.T) {
+  assertGreaterThanZero(u.GetId(), "GetId", t);
+  assertNotEmpty(u.GetScreenName(), "GetScreenName", t);
+  assertNotEmpty(u.GetName(), "GetName", t);
+  assertNotNil(u.GetStatus(), "GetStatus", t);
+  assertNotEmpty(u.GetScreenName(), "GetScreenName", t);
+}
 
-  if val := s.GetId(); val <= 0 {
-    t.Errorf("Status.GetId() is <= 0, got %d expected > 0", val);
-    numErrors++;
-  }
-
-  if IsEmpty(s.GetCreatedAt()) {
-    t.Error("Status.GetCreatedAt() is empty, expected not empty");
-    numErrors++;
-  }
-
-  if IsEmpty(s.GetText()) {
-    t.Error("Status.GetText() is empty, expected not empty");
-    numErrors++;
-  }
-
-  if numErrors > 0 {
-    t.Logf(kFormat, i, s);
-  }
-
+func verifyValidStatus(s Status, t *testing.T) {
+  assertGreaterThanZero(s.GetId(), "GetId", t);
+  assertNotEmpty(s.GetCreatedAt(), "GetCreatedAt", t);
+  assertNotEmpty(s.GetText(), "GetText", t);
+  assertNotNil(s.GetUser(), "GetUser", t);
 }
 
 func getAllApiErrors(errors chan os.Error, t *testing.T) {
@@ -105,6 +106,24 @@ func getAllApiErrors(errors chan os.Error, t *testing.T) {
 
 func IsEmpty(s string) bool {
   return len(s) == 0;
+}
+
+func assertGreaterThanZero(i int64, fn string, t *testing.T) {
+  if i <= 0 {
+    t.Errorf("%s is <= 0, got %d expected > 0", fn, i);
+  }
+}
+
+func assertNotEmpty(s, fn string, t *testing.T) {
+  if IsEmpty(s) {
+    t.Errorf("%s is empty, expected not empty", fn);
+  }
+}
+
+func assertNotNil(i interface{}, fn string, t *testing.T) {
+  if i == nil {
+    t.Errorf("%s is nil, expected not nil", fn);
+  }
 }
 
 func StatusEqual(a, b Status) bool {

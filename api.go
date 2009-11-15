@@ -20,6 +20,7 @@ import (
   "fmt";
   "os";
   "json";
+  "reflect";
 )
 
 const (
@@ -36,15 +37,17 @@ const (
   _QUERY_USERTIMELINE = "%sstatuses/user_timeline.%s";
   _QUERY_REPLIES = "%sstatuses/mentions.%s";
   _QUERY_FRIENDSTIMELINE = "%sstatuses/friends_timeline.%s";
+  _QUERY_FOLLOWERS_USER = "%sstatuses/followers.%s?screen_name=%s";
+  _QUERY_FOLLOWERS_ID = "%sstatuses/followers.%s?user_id=%d";
 )
 
 const (
-  _CHAN_STATUS = iota;
-  _CHAN_SLICESTATUS;
-  _CHAN_USER;
-  _CHAN_SLICEUSER;
-  _CHAN_BOOL;
-  _CHAN_ERROR;
+  _STATUS = iota;
+  _SLICESTATUS;
+  _USER;
+  _SLICEUSER;
+  _BOOL;
+  _ERROR;
 )
 
 type TwitterError struct {
@@ -57,6 +60,7 @@ type Api struct {
   errors chan os.Error;
   lastError os.Error;
   client string;
+  cacheBackend *CacheBackend;
   receiveChannel interface{};
 }
 
@@ -86,6 +90,46 @@ func (self *Api) GetLastError() os.Error {
   return last;
 }
 
+func (self *Api) SetCacheBackend(backend *CacheBackend) {
+  self.cacheBackend = backend;
+}
+
+// Gets the followers for a given user represented by a slice
+// of twitter.User instances
+//
+// user:
+//  A user id or name to fetch the followers from. If this argument
+//  is nil, then the followers are fetched from the authenticated user.
+//  This paramater must be an int, int64, or string.
+//
+// page:
+//  Not yet implemented
+func (self *Api) GetFollowers(user interface{}, page int) chan []User {
+  var url string;
+  responseChannel := self.buildRespChannel(_SLICEUSER).(chan []User);
+
+  switch(reflect.Typeof(user)) {
+  case reflect.Typeof(""):
+    url = fmt.Sprintf(_QUERY_FOLLOWERS_USER, kTwitterUrl, kFormat, user.(string));
+    break;
+  case reflect.Typeof(int64(1)):
+    url = fmt.Sprintf(_QUERY_FOLLOWERS_ID, kTwitterUrl, kFormat, user.(int64));
+    break;
+  case reflect.Typeof(int(1)):
+    url = fmt.Sprintf(_QUERY_FOLLOWERS_ID, kTwitterUrl, kFormat, user.(int));
+    break;
+  default:
+    self.reportError("User parameter must be a string, int, or int64");
+
+    responseChannel <- nil;
+    return responseChannel;
+  }
+
+  go self.goGetUsers(url, responseChannel);
+  return responseChannel;
+}
+
+
 // Checks to see if there are any errors in the error channel
 func (self *Api) HasErrors() bool {
   return len(self.errors) > 0;
@@ -93,7 +137,7 @@ func (self *Api) HasErrors() bool {
 
 // Retrieves the public timeline as a slice of Status objects
 func (self *Api) GetPublicTimeline() chan []Status {
-  responseChannel := self.buildRespChannel(_CHAN_SLICESTATUS).(chan []Status);
+  responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_PUBLICTIMELINE, kTwitterUrl, kFormat);
   go self.goGetStatuses(url, responseChannel);
@@ -104,7 +148,7 @@ func (self *Api) GetPublicTimeline() chan []Status {
 // Retrieves the currently authorized user's 
 // timeline as a slice of Status objects
 func (self *Api) GetUserTimeline() chan []Status {
-  responseChannel := self.buildRespChannel(_CHAN_SLICESTATUS).(chan []Status);
+  responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_USERTIMELINE, kTwitterUrl, kFormat);
   go self.goGetStatuses(url, responseChannel);
@@ -116,7 +160,8 @@ func (self *Api) GetUserTimeline() chan []Status {
 // that user's friends. This is the equivalent of /timeline/home on the Web.
 // Returns the statuses as a slice of Status objects
 func (self *Api) GetFriendsTimeline() chan []Status {
-  responseChannel := self.buildRespChannel(_CHAN_SLICESTATUS).(chan []Status);
+
+  responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_FRIENDSTIMELINE, kTwitterUrl, kFormat);
   go self.goGetStatuses(url, responseChannel);
@@ -127,34 +172,66 @@ func (self *Api) GetFriendsTimeline() chan []Status {
 // Returns the 20 most recent mentions for the authenticated user
 // Returns the statuses as a slice of Status objects
 func (self *Api) GetReplies() chan []Status {
-  responseChannel := self.buildRespChannel(_CHAN_SLICESTATUS).(chan []Status);
+  responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_REPLIES, kTwitterUrl, kFormat);
   go self.goGetStatuses(url, responseChannel);
   return responseChannel;
 }
 
-// TODO: Use reflection to reduce code duplication 
-// when making the response channel
+// Builds a response channel for async function calls
 func (self *Api) buildRespChannel(channelType int) interface {} {
   const size = 1;
 
+  // TODO: I think it's time to learn the reflect package...
+  // this switch statement is to protect the client from
+  // using a wrong receive channel
   if self.receiveChannel != nil {
-    return self.receiveChannel;
+    switch(channelType) {
+    case _STATUS:
+      if _, ok := self.receiveChannel.(chan Status); ok {
+        return self.receiveChannel;
+      }
+      break;
+    case _SLICESTATUS:
+      if _, ok := self.receiveChannel.(chan []Status); ok {
+        return self.receiveChannel;
+      }
+      break;
+    case _USER:
+      if _, ok := self.receiveChannel.(chan User); ok {
+        return self.receiveChannel;
+      }
+      break;
+    case _SLICEUSER:
+      if _, ok := self.receiveChannel.(chan []User); ok {
+        return self.receiveChannel;
+      }
+      break;
+    case _BOOL:
+      if _, ok := self.receiveChannel.(chan bool); ok {
+        return self.receiveChannel;
+      }
+      break;
+    case _ERROR:
+      if _, ok := self.receiveChannel.(chan os.Error); ok {
+        return self.receiveChannel;
+      }
+    }
   }
 
   switch(channelType) {
-  case _CHAN_STATUS:
+  case _STATUS:
     return make(chan Status, size);
-  case _CHAN_SLICESTATUS:
+  case _SLICESTATUS:
     return make(chan []Status, size);
-  case _CHAN_USER:
+  case _USER:
     return make(chan User, size);
-  case _CHAN_SLICEUSER:
+  case _SLICEUSER:
     return make(chan []User, size);
-  case _CHAN_BOOL:
+  case _BOOL:
     return make(chan bool, size);
-  case _CHAN_ERROR:
+  case _ERROR:
     return make(chan os.Error, size);
   }
 
@@ -164,6 +241,10 @@ func (self *Api) buildRespChannel(channelType int) interface {} {
 
 func (self *Api) goGetStatuses(url string, responseChannel chan []Status) {
   responseChannel <- self.getStatuses(url);
+}
+
+func (self *Api) goGetUsers(url string, responseChannel chan []User) {
+  responseChannel <- self.getUsers(url);
 }
 
 func (self *Api) getStatuses(url string) []Status {
@@ -187,6 +268,30 @@ func (self *Api) getStatuses(url string) []Status {
   return timeline;
 }
 
+// TODO: consolidate getStatuses/getUsers when we get generics or when someone
+//       submits a patch of reflect wizardry which I can't seem to wrap my head
+//       around
+func (self *Api) getUsers(url string) []User {
+  var usersDummy tTwitterUserListDummy;
+  var users []User;
+
+  jsonString := self.getJsonFromUrl(url);
+  json.Unmarshal(jsonString, &usersDummy);
+
+  dummyLen := len(usersDummy.Object);
+  users = make([]User, dummyLen);
+
+  for i := 0; i < dummyLen; i++ {
+    user := &usersDummy.Object[i];
+    users[i] = user;
+    if err := user.GetError(); err != "" {
+      self.reportError(err);
+    }
+  }
+
+  return users;
+}
+
 // Sets the Twitter client header, aka the X-Twitter-Client http header on 
 // all POST operations
 func (self *Api) SetClientString(client string) {
@@ -198,6 +303,11 @@ func (self *Api) init() {
   self.errors = make(chan os.Error, 16);
   self.receiveChannel = nil;
   self.client = kDefaultClient;
+
+  // default cache
+  userCache := NewMemoryCache();
+  statusCache := NewMemoryCache();
+  self.cacheBackend = NewCacheBackend(userCache, statusCache, kExpireTime);
 }
 
 // Sets the username and password string for all subsequent authorized
@@ -215,7 +325,7 @@ func (self *Api) Logout() {
 }
 
 // Returns a channel which receives API errors. Can be used for logging
-// errors or pseudo-exception handling. Eg.
+// errors.
 //
 //    monitorErrors - listens to api errors and logs them    
 //
@@ -239,7 +349,7 @@ func (self *Api) GetErrorChannel() chan os.Error {
 //
 // The twitter.Api instance must be authenticated
 func (self *Api) PostUpdate(status string, inReplyToId int64) chan bool  {
-  responseChannel := self.buildRespChannel(_CHAN_BOOL).(chan bool);
+  responseChannel := self.buildRespChannel(_BOOL).(chan bool);
 
   go self.goPostUpdate(status, inReplyToId, responseChannel);
   return responseChannel;
@@ -267,17 +377,30 @@ func (self *Api) goPostUpdate(status string, inReplyToId int64,
 
 // Gets a Twitter status given a status id
 //
-// The call is made asyncronously and returns instantly
-// returns a channel that receives the Status interface when the request
-// is completed
-//
 // The twitter.Api instance must be authenticated if the status message
 // is private
+//
+// Returns: a channel which receives a twitter.Status object when
+//          the request is completed
 func (self *Api) GetStatus(id int64) chan Status {
-  responseChannel := self.buildRespChannel(_CHAN_STATUS).(chan Status);
+  responseChannel := self.buildRespChannel(_STATUS).(chan Status);
+
+  // grab from cache if we have it
+  if cached, hasCached := self.getCachedStatus(id); hasCached {
+    responseChannel <- cached;
+    return responseChannel;
+  }
 
   go self.goGetStatus(id, responseChannel);
   return responseChannel;
+}
+
+func (self *Api) getCachedStatus(id int64) (Status, bool) {
+  if self.cacheBackend.HasStatusExpired(id) {
+    return nil, false;
+  }
+
+  return self.cacheBackend.GetStatus(id), true;
 }
 
 func (self *Api) SetReceiveChannel(receiveChannel interface{}) {

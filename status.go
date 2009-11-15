@@ -25,6 +25,7 @@ type Status interface {
   GetInReplyToStatusId() int64;
   GetInReplyToUserId() int64;
   GetNow() int;
+  GetUser() User;
 }
 
 type errorSource interface {
@@ -44,15 +45,12 @@ type tTwitterStatus struct {
   In_reply_to_status_id int64;
   In_reply_to_user_id int64;
   Error string;
+  User *tTwitterUser;
   now int;
 }
 
-type tTwitterStatusDummy struct {
-  Object tTwitterStatus;
-}
-
-type tTwitterTimelineDummy struct {
-  Object []tTwitterStatus;
+func newEmptyTwitterStatus() *tTwitterStatus {
+  return new(tTwitterStatus);
 }
 
 func (self *tTwitterStatus) GetError() string {
@@ -61,6 +59,13 @@ func (self *tTwitterStatus) GetError() string {
 
 func (self *tTwitterStatus) GetCreatedAt() string {
   return self.Created_at;
+}
+
+func (self *tTwitterStatus) GetUser() User {
+  if self.User == nil {
+    self.User = newEmptyTwitterUser();
+  }
+  return self.User;
 }
 
 func (self *tTwitterStatus) GetCreatedAtInSeconds() int {

@@ -34,12 +34,25 @@ func main() {
 
   for i := 0; i < nIds; i++ {
     // reads in status messages as they come in
-    fmt.Printf("Status #%d: %v\n", i, <-receiveChannel);
+    status := <-receiveChannel;
+    fmt.Printf("Status #%d %s: %s\n", i,
+                status.GetUser().GetScreenName(),
+                status.GetText());
   }
+
+  showFollowers(api, "jb55");
 
   for i := 0; api.HasErrors(); i++ {
     fmt.Printf("Error #%d: %s\n", i, <-errors);
   }
 
   //api.PostUpdate("Testing my Go twitter library", 0);
+}
+
+func showFollowers(api *twitter.Api, user interface{}) {
+  followers := <-api.GetFollowers(user, 0);
+
+  for _, follower := range followers {
+    fmt.Printf("%v\n", follower.GetName());
+  }
 }
