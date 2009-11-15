@@ -20,19 +20,20 @@ Installation
 Quick Start
 ===========
 
-import "twitter"
+::
+  import "twitter"
 
-// Prints the public timeline
-func main() {
-  api := twitter.NewApi();
-  pubTimeline := <-api.GetPublicTimeline();
+  // Prints the public timeline
+  func main() {
+    api := twitter.NewApi();
+    pubTimeline := <-api.GetPublicTimeline();
 
-  for i, status := range pubTimeline {
-    fmt.Printf("#%d %s: %s", i,
+    for i, status := range pubTimeline {
+      fmt.Printf("#%d %s: %s", i,
                 status.GetUser().GetScreenName(),
                 status.GetText());
+    }
   }
-}
 
 
 Documentation
