@@ -9,7 +9,7 @@ python-twitter.
 Installation
 ============
 
-#. Make sure you have Go installed and have your environment is set up
+#. Make sure you have Go installed and your environment is set up
    correctly: $GOROOT, $GOARCH, $GOBIN, etc.
 
 #. Checkout the code from the repository or extract the source code.
