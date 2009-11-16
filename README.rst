@@ -30,7 +30,7 @@ Quick Start
     pubTimeline := <-api.GetPublicTimeline();
 
     for i, status := range pubTimeline {
-      fmt.Printf("#%d %s: %s", i,
+      fmt.Printf("#%d %s: %s\n", i,
                 status.GetUser().GetScreenName(),
                 status.GetText());
     }
