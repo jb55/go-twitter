@@ -14,7 +14,7 @@ Installation
 
 #. Checkout the code from the repository or extract the source code.
 
-#. cd go-twitter && make && make install
+#. cd go-twitter && make install
 
 
 Quick Start

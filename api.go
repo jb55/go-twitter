@@ -105,7 +105,7 @@ func (self *Api) SetCacheBackend(backend *CacheBackend) {
 //
 // page:
 //  Not yet implemented
-func (self *Api) GetFollowers(user interface{}, page int) chan []User {
+func (self *Api) GetFollowers(user interface{}, page int) <-chan []User {
   return self.getUsersByType(user, page, "followers");
 }
 
@@ -119,12 +119,12 @@ func (self *Api) GetFollowers(user interface{}, page int) chan []User {
 //
 // page:
 //  Not yet implemented
-func (self *Api) GetFriends(user interface{}, page int) chan []User {
+func (self *Api) GetFriends(user interface{}, page int) <-chan []User {
   return self.getUsersByType(user, page, "friends");
 }
 
 func (self *Api) getUsersByType(user interface{}, page int, typ string)
-                               (chan []User) {
+                               (<-chan []User) {
   var url string;
   var ok bool;
   responseChannel := self.buildRespChannel(_SLICEUSER).(chan []User);
@@ -146,7 +146,7 @@ func (self *Api) HasErrors() bool {
 }
 
 // Retrieves the public timeline as a slice of Status objects
-func (self *Api) GetPublicTimeline() chan []Status {
+func (self *Api) GetPublicTimeline() <-chan []Status {
   responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_PUBLICTIMELINE, kTwitterUrl, kFormat);
@@ -157,7 +157,7 @@ func (self *Api) GetPublicTimeline() chan []Status {
 
 // Retrieves the currently authorized user's 
 // timeline as a slice of Status objects
-func (self *Api) GetUserTimeline() chan []Status {
+func (self *Api) GetUserTimeline() <-chan []Status {
   responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_USERTIMELINE, kTwitterUrl, kFormat);
@@ -169,7 +169,7 @@ func (self *Api) GetUserTimeline() chan []Status {
 // Returns the 20 most recent statuses posted by the authenticating user and 
 // that user's friends. This is the equivalent of /timeline/home on the Web.
 // Returns the statuses as a slice of Status objects
-func (self *Api) GetFriendsTimeline() chan []Status {
+func (self *Api) GetFriendsTimeline() <-chan []Status {
 
   responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
 
@@ -181,7 +181,7 @@ func (self *Api) GetFriendsTimeline() chan []Status {
 
 // Returns the 20 most recent mentions for the authenticated user
 // Returns the statuses as a slice of Status objects
-func (self *Api) GetReplies() chan []Status {
+func (self *Api) GetReplies() <-chan []Status {
   responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
 
   url := fmt.Sprintf(_QUERY_REPLIES, kTwitterUrl, kFormat);
@@ -351,14 +351,14 @@ func (self *Api) Logout() {
 //      }
 //    }
 //
-func (self *Api) GetErrorChannel() chan os.Error {
+func (self *Api) GetErrorChannel() <-chan os.Error {
   return self.errors;
 }
 
 // Post a Twitter status message to the authenticated user
 //
 // The twitter.Api instance must be authenticated
-func (self *Api) PostUpdate(status string, inReplyToId int64) chan bool  {
+func (self *Api) PostUpdate(status string, inReplyToId int64) <-chan bool  {
   responseChannel := self.buildRespChannel(_BOOL).(chan bool);
 
   go self.goPostUpdate(status, inReplyToId, responseChannel);
@@ -392,7 +392,7 @@ func (self *Api) goPostUpdate(status string, inReplyToId int64,
 //
 // Returns: a channel which receives a twitter.Status object when
 //          the request is completed
-func (self *Api) GetStatus(id int64) chan Status {
+func (self *Api) GetStatus(id int64) <-chan Status {
   responseChannel := self.buildRespChannel(_STATUS).(chan Status);
 
   // grab from cache if we have it
