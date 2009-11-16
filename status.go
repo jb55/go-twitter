@@ -26,6 +26,7 @@ type Status interface {
   GetInReplyToUserId() int64;
   GetNow() int;
   GetUser() User;
+  setUser(user User);
 }
 
 type errorSource interface {
@@ -65,7 +66,12 @@ func (self *tTwitterStatus) GetUser() User {
   if self.User == nil {
     self.User = newEmptyTwitterUser();
   }
+  self.User.setStatus(self);
   return self.User;
+}
+
+func (self *tTwitterStatus) setUser(user User) {
+  self.User = user.(*tTwitterUser);
 }
 
 func (self *tTwitterStatus) GetCreatedAtInSeconds() int {

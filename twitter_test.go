@@ -19,6 +19,7 @@ import "testing"
 import "os"
 import "fmt"
 
+// dont change this
 const kId = 5641609144;
 
 var cache *CacheBackend;
@@ -29,10 +30,34 @@ func TestValidStatus(t *testing.T) {
   errors := api.GetErrorChannel();
 
   fmt.Printf("<-api.GetStatus() ...\n");
-  status := <-api.GetStatus(kId);
+  status := (<-api.GetUser("jb55")).GetStatus();
 
   verifyValidStatus(status, t);
   verifyValidUser(status.GetUser(), t);
+  getAllApiErrors(errors, t);
+}
+
+func TestValidUser(t *testing.T) {
+  api := NewApi();
+  cache = api.cacheBackend;
+  errors := api.GetErrorChannel();
+
+  fmt.Printf("<-api.GetUser() ...\n");
+
+  // this should be cached from our first test
+  // kId is a status id from my twitter account,
+  // and it should have grabbed my user info
+  // when it grabbed the status
+  hitBefore := cache.hit;
+  user := <-api.GetUser(9918032);
+  hitAfter := cache.hit;
+
+  if hitBefore == hitAfter {
+    t.Error("Cache was not hit on user lookup, expected: cache lookup");
+  }
+
+  verifyValidUser(user, t);
+  verifyValidStatus(user.GetStatus(), t);
   getAllApiErrors(errors, t);
 }
 

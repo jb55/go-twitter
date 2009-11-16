@@ -32,6 +32,7 @@ type User interface {
   GetTimeZone() string;
   GetURL() string;
   GetStatus() Status;
+  setStatus(status Status);
   GetStatusesCount() int;
   GetFollowersCount() int;
   GetFriendsCount() int;
@@ -134,7 +135,12 @@ func (self *tTwitterUser) GetStatus() Status {
   if self.Status == nil {
     self.Status = newEmptyTwitterStatus();
   }
+  self.Status.setUser(self);
   return self.Status;
+}
+
+func (self *tTwitterUser) setStatus(status Status) {
+  self.Status = status.(*tTwitterStatus);
 }
 
 func (self *tTwitterUser) GetStatusesCount() int {

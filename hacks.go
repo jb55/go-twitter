@@ -30,7 +30,7 @@ type tTwitterUserListDummy struct {
 }
 
 type tTwitterUserDummy struct {
-  Object User;
+  Object tTwitterUser;
 }
 
 // I should probably put http_auth.go in here as well

@@ -36,9 +36,9 @@ const (
   _QUERY_USERTIMELINE = "%sstatuses/user_timeline.%s";
   _QUERY_REPLIES = "%sstatuses/mentions.%s";
   _QUERY_FRIENDSTIMELINE = "%sstatuses/friends_timeline.%s";
-  _QUERY_USER_NAME = "%sstatuses/%s.%s?screen_name=%s";
-  _QUERY_USER_ID = "%sstatuses/%s.%s?user_id=%d";
-  _QUERY_USER_DEFAULT = "%sstatuses/%s.%s";
+  _QUERY_USER_NAME = "%s%s.%s?screen_name=%s";
+  _QUERY_USER_ID = "%s%s.%s?user_id=%d";
+  _QUERY_USER_DEFAULT = "%s%s.%s";
 )
 
 const (
@@ -105,7 +105,7 @@ func (self *Api) SetCacheBackend(backend *CacheBackend) {
 // page:
 //  Not yet implemented
 func (self *Api) GetFollowers(user interface{}, page int) <-chan []User {
-  return self.getUsersByType(user, page, "followers");
+  return self.getUsersByType(user, page, "statuses/followers");
 }
 
 // Gets the friends for a given user represented by a slice
@@ -119,7 +119,7 @@ func (self *Api) GetFollowers(user interface{}, page int) <-chan []User {
 // page:
 //  Not yet implemented
 func (self *Api) GetFriends(user interface{}, page int) <-chan []User {
-  return self.getUsersByType(user, page, "friends");
+  return self.getUsersByType(user, page, "statuses/friends");
 }
 
 func (self *Api) getUsersByType(user interface{}, page int, typ string)
@@ -137,7 +137,36 @@ func (self *Api) getUsersByType(user interface{}, page int, typ string)
   return responseChannel;
 }
 
+func (self *Api) GetUser(user interface{}) <-chan User {
+  var url string;
+  var ok bool;
+  var userId int64 = 0;
+  responseChannel := self.buildRespChannel(_USER).(chan User);
 
+  // TODO: use username as the cache key instead of id
+  switch user.(type) {
+  case int:
+    userId = int64(user.(int));
+    break;
+  case int64:
+    userId = user.(int64);
+  }
+
+  if userId != 0 {
+    if cached, hasCached := self.getCachedUser(userId); hasCached {
+      responseChannel <- cached;
+      return responseChannel;
+    }
+  }
+
+  if url, ok = self.buildUserUrl("users/show", user, 0); !ok {
+    responseChannel <- nil;
+    return responseChannel;
+  }
+
+  go self.goGetUser(url, responseChannel);
+  return responseChannel;
+}
 
 // Checks to see if there are any errors in the error channel
 func (self *Api) HasErrors() bool {
@@ -280,6 +309,7 @@ func (self *Api) getStatuses(url string) []Status {
   return timeline;
 }
 
+
 // TODO: consolidate getStatuses/getUsers when we get generics or when someone
 //       submits a patch of reflect wizardry which I can't seem to wrap my head
 //       around
@@ -418,8 +448,32 @@ func (self *Api) getCachedStatus(id int64) (Status, bool) {
   return self.cacheBackend.GetStatus(id), true;
 }
 
+func (self *Api) getCachedUser(id int64) (User, bool) {
+  if self.cacheBackend.HasUserExpired(id) {
+    return nil, false;
+  }
+
+  return self.cacheBackend.GetUser(id), true;
+}
+
 func (self *Api) SetReceiveChannel(receiveChannel interface{}) {
   self.receiveChannel = receiveChannel;
+}
+
+func (self *Api) goGetUser(url string, response chan User) {
+  var user tTwitterUserDummy;
+  jsonString := self.getJsonFromUrl(url);
+  json.Unmarshal(jsonString, &user);
+
+  u := &(user.Object);
+  if err := u.GetError(); err != "" {
+    self.reportError(err);
+  } else {
+    self.cacheBackend.StoreUser(u);
+    self.cacheBackend.StoreStatus(u.GetStatus());
+  }
+
+  response <- u;
 }
 
 func (self *Api) goGetStatus(id int64, response chan Status) {
