@@ -20,7 +20,6 @@ import (
   "fmt";
   "os";
   "json";
-  "reflect";
 )
 
 const (
@@ -272,6 +271,9 @@ func (self *Api) getStatuses(url string) []Status {
     timeline[i] = status;
     if err := status.GetError(); err != "" {
       self.reportError(err);
+    } else {
+      self.cacheBackend.StoreStatus(status);
+      self.cacheBackend.StoreUser(status.GetUser());
     }
   }
 
@@ -296,6 +298,9 @@ func (self *Api) getUsers(url string) []User {
     users[i] = user;
     if err := user.GetError(); err != "" {
       self.reportError(err);
+    } else  {
+      self.cacheBackend.StoreUser(user);
+      self.cacheBackend.StoreStatus(user.GetStatus());
     }
   }
 
@@ -339,7 +344,7 @@ func (self *Api) Logout() {
 //
 //    monitorErrors - listens to api errors and logs them    
 //
-//    func monitorErrors(quit chan bool, errors chan os.Error) {
+//    func monitorErrors(quit chan bool, errors <-chan os.Error) {
 //      for ;; {
 //        select {
 //        case err := <-errors:
@@ -426,6 +431,9 @@ func (self *Api) goGetStatus(id int64, response chan Status) {
   s := &(status.Object);
   if err := s.GetError(); err != "" {
     self.reportError(err);
+  } else {
+    self.cacheBackend.StoreStatus(s);
+    self.cacheBackend.StoreUser(s.GetUser());
   }
 
   response <- s;
@@ -472,14 +480,14 @@ func (self *Api) buildUserUrl(typ string, user interface{}, page int)
     return url, true;
   }
 
-  switch(reflect.Typeof(user)) {
-  case reflect.Typeof(""):
+  switch(user.(type)) {
+  case string:
     url = fmt.Sprintf(_QUERY_USER_NAME, kTwitterUrl, typ, kFormat, user.(string));
     break;
-  case reflect.Typeof(int64(1)):
+  case int64:
     url = fmt.Sprintf(_QUERY_USER_ID, kTwitterUrl, typ, kFormat, user.(int64));
     break;
-  case reflect.Typeof(int(1)):
+  case int:
     url = fmt.Sprintf(_QUERY_USER_ID, kTwitterUrl, typ, kFormat, user.(int));
     break;
   default:

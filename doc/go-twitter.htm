@@ -36,33 +36,33 @@ limitations under the License.
 				<a href="../util.go">util.go</a>
 			</span>
 			</p>
-			<h2>type <a href="../api.go#L58"><a id="L58"></a>Api</a></h2>
+			<h2>type <a href="../api.go#L57"><a id="L57"></a>Api</a></h2>
 			
-			<p><pre><a id="L58"></a>type Api struct {
+			<p><pre><a id="L57"></a>type Api struct {
     // contains unexported fields
-<a id="L66"></a>}</pre></p>
-				<h3>func <a href="../api.go#L74">NewApi</a></h3>
-				<p><code><a id="L74"></a>func NewApi() *Api</code></p>
+<a id="L65"></a>}</pre></p>
+				<h3>func <a href="../api.go#L73">NewApi</a></h3>
+				<p><code><a id="L73"></a>func NewApi() *Api</code></p>
 				<p>
 Creates and initializes new Api objec
 </p>
 
-				<h3>func (<a id="L325"></a>*Api) <a href="../api.go#L325">Authenticate</a></h3>
-				<p><code><a id="L325"></a>func (self *Api) Authenticate(username, password string)</code></p>
+				<h3>func (<a id="L330"></a>*Api) <a href="../api.go#L330">Authenticate</a></h3>
+				<p><code><a id="L330"></a>func (self *Api) Authenticate(username, password string)</code></p>
 				<p>
 Sets the username and password string for all subsequent authorized
 HTTP requests
 </p>
 
-				<h3>func (<a id="L354"></a>*Api) <a href="../api.go#L354">GetErrorChannel</a></h3>
-				<p><code><a id="L354"></a>func (self *Api) GetErrorChannel() &lt;-chan os.Error</code></p>
+				<h3>func (<a id="L359"></a>*Api) <a href="../api.go#L359">GetErrorChannel</a></h3>
+				<p><code><a id="L359"></a>func (self *Api) GetErrorChannel() &lt;-chan os.Error</code></p>
 				<p>
 Returns a channel which receives API errors. Can be used for logging
 errors.
 </p>
 <pre>monitorErrors - listens to api errors and logs them
 
-func monitorErrors(quit chan bool, errors chan os.Error) {
+func monitorErrors(quit chan bool, errors &lt;-chan os.Error) {
   for ;; {
     select {
     case err := &lt;-errors:
@@ -75,8 +75,8 @@ func monitorErrors(quit chan bool, errors chan os.Error) {
 }
 </pre>
 
-				<h3>func (<a id="L108"></a>*Api) <a href="../api.go#L108">GetFollowers</a></h3>
-				<p><code><a id="L108"></a>func (self *Api) GetFollowers(user interface{}, page int) &lt;-chan []User</code></p>
+				<h3>func (<a id="L107"></a>*Api) <a href="../api.go#L107">GetFollowers</a></h3>
+				<p><code><a id="L107"></a>func (self *Api) GetFollowers(user interface{}, page int) &lt;-chan []User</code></p>
 				<p>
 Gets the followers for a given user represented by a slice
 of twitter.User instances
@@ -94,8 +94,8 @@ page:
 <pre>Not yet implemented
 </pre>
 
-				<h3>func (<a id="L122"></a>*Api) <a href="../api.go#L122">GetFriends</a></h3>
-				<p><code><a id="L122"></a>func (self *Api) GetFriends(user interface{}, page int) &lt;-chan []User</code></p>
+				<h3>func (<a id="L121"></a>*Api) <a href="../api.go#L121">GetFriends</a></h3>
+				<p><code><a id="L121"></a>func (self *Api) GetFriends(user interface{}, page int) &lt;-chan []User</code></p>
 				<p>
 Gets the friends for a given user represented by a slice
 of twitter.User instances
@@ -113,37 +113,37 @@ page:
 <pre>Not yet implemented
 </pre>
 
-				<h3>func (<a id="L172"></a>*Api) <a href="../api.go#L172">GetFriendsTimeline</a></h3>
-				<p><code><a id="L172"></a>func (self *Api) GetFriendsTimeline() &lt;-chan []Status</code></p>
+				<h3>func (<a id="L171"></a>*Api) <a href="../api.go#L171">GetFriendsTimeline</a></h3>
+				<p><code><a id="L171"></a>func (self *Api) GetFriendsTimeline() &lt;-chan []Status</code></p>
 				<p>
 Returns the 20 most recent statuses posted by the authenticating user and
 that user&#39;s friends. This is the equivalent of /timeline/home on the Web.
 Returns the statuses as a slice of Status objects
 </p>
 
-				<h3>func (<a id="L88"></a>*Api) <a href="../api.go#L88">GetLastError</a></h3>
-				<p><code><a id="L88"></a>func (self *Api) GetLastError() os.Error</code></p>
+				<h3>func (<a id="L87"></a>*Api) <a href="../api.go#L87">GetLastError</a></h3>
+				<p><code><a id="L87"></a>func (self *Api) GetLastError() os.Error</code></p>
 				<p>
 Returns the last error sent to the error channel.
 Calling this function pops the last error, subsequent calls will be nil
 unless another error has occured.
 </p>
 
-				<h3>func (<a id="L149"></a>*Api) <a href="../api.go#L149">GetPublicTimeline</a></h3>
-				<p><code><a id="L149"></a>func (self *Api) GetPublicTimeline() &lt;-chan []Status</code></p>
+				<h3>func (<a id="L148"></a>*Api) <a href="../api.go#L148">GetPublicTimeline</a></h3>
+				<p><code><a id="L148"></a>func (self *Api) GetPublicTimeline() &lt;-chan []Status</code></p>
 				<p>
 Retrieves the public timeline as a slice of Status objects
 </p>
 
-				<h3>func (<a id="L184"></a>*Api) <a href="../api.go#L184">GetReplies</a></h3>
-				<p><code><a id="L184"></a>func (self *Api) GetReplies() &lt;-chan []Status</code></p>
+				<h3>func (<a id="L183"></a>*Api) <a href="../api.go#L183">GetReplies</a></h3>
+				<p><code><a id="L183"></a>func (self *Api) GetReplies() &lt;-chan []Status</code></p>
 				<p>
 Returns the 20 most recent mentions for the authenticated user
 Returns the statuses as a slice of Status objects
 </p>
 
-				<h3>func (<a id="L395"></a>*Api) <a href="../api.go#L395">GetStatus</a></h3>
-				<p><code><a id="L395"></a>func (self *Api) GetStatus(id int64) &lt;-chan Status</code></p>
+				<h3>func (<a id="L400"></a>*Api) <a href="../api.go#L400">GetStatus</a></h3>
+				<p><code><a id="L400"></a>func (self *Api) GetStatus(id int64) &lt;-chan Status</code></p>
 				<p>
 Gets a Twitter status given a status id
 </p>
@@ -157,28 +157,28 @@ Returns: a channel which receives a twitter.Status object when
 <pre>the request is completed
 </pre>
 
-				<h3>func (<a id="L160"></a>*Api) <a href="../api.go#L160">GetUserTimeline</a></h3>
-				<p><code><a id="L160"></a>func (self *Api) GetUserTimeline() &lt;-chan []Status</code></p>
+				<h3>func (<a id="L159"></a>*Api) <a href="../api.go#L159">GetUserTimeline</a></h3>
+				<p><code><a id="L159"></a>func (self *Api) GetUserTimeline() &lt;-chan []Status</code></p>
 				<p>
 Retrieves the currently authorized user&#39;s
 timeline as a slice of Status objects
 </p>
 
-				<h3>func (<a id="L144"></a>*Api) <a href="../api.go#L144">HasErrors</a></h3>
-				<p><code><a id="L144"></a>func (self *Api) HasErrors() bool</code></p>
+				<h3>func (<a id="L143"></a>*Api) <a href="../api.go#L143">HasErrors</a></h3>
+				<p><code><a id="L143"></a>func (self *Api) HasErrors() bool</code></p>
 				<p>
 Checks to see if there are any errors in the error channel
 </p>
 
-				<h3>func (<a id="L332"></a>*Api) <a href="../api.go#L332">Logout</a></h3>
-				<p><code><a id="L332"></a>func (self *Api) Logout()</code></p>
+				<h3>func (<a id="L337"></a>*Api) <a href="../api.go#L337">Logout</a></h3>
+				<p><code><a id="L337"></a>func (self *Api) Logout()</code></p>
 				<p>
 Disable Twitter authentication, subsequent REST calls will not use
 Authentication
 </p>
 
-				<h3>func (<a id="L361"></a>*Api) <a href="../api.go#L361">PostUpdate</a></h3>
-				<p><code><a id="L361"></a>func (self *Api) PostUpdate(status string, inReplyToId int64) &lt;-chan bool</code></p>
+				<h3>func (<a id="L366"></a>*Api) <a href="../api.go#L366">PostUpdate</a></h3>
+				<p><code><a id="L366"></a>func (self *Api) PostUpdate(status string, inReplyToId int64) &lt;-chan bool</code></p>
 				<p>
 Post a Twitter status message to the authenticated user
 </p>
@@ -186,18 +186,18 @@ Post a Twitter status message to the authenticated user
 The twitter.Api instance must be authenticated
 </p>
 
-				<h3>func (<a id="L94"></a>*Api) <a href="../api.go#L94">SetCacheBackend</a></h3>
-				<p><code><a id="L94"></a>func (self *Api) SetCacheBackend(backend *CacheBackend)</code></p>
+				<h3>func (<a id="L93"></a>*Api) <a href="../api.go#L93">SetCacheBackend</a></h3>
+				<p><code><a id="L93"></a>func (self *Api) SetCacheBackend(backend *CacheBackend)</code></p>
 				
-				<h3>func (<a id="L307"></a>*Api) <a href="../api.go#L307">SetClientString</a></h3>
-				<p><code><a id="L307"></a>func (self *Api) SetClientString(client string)</code></p>
+				<h3>func (<a id="L312"></a>*Api) <a href="../api.go#L312">SetClientString</a></h3>
+				<p><code><a id="L312"></a>func (self *Api) SetClientString(client string)</code></p>
 				<p>
 Sets the Twitter client header, aka the X-Twitter-Client http header on
 all POST operations
 </p>
 
-				<h3>func (<a id="L416"></a>*Api) <a href="../api.go#L416">SetReceiveChannel</a></h3>
-				<p><code><a id="L416"></a>func (self *Api) SetReceiveChannel(receiveChannel interface{})</code></p>
+				<h3>func (<a id="L421"></a>*Api) <a href="../api.go#L421">SetReceiveChannel</a></h3>
+				<p><code><a id="L421"></a>func (self *Api) SetReceiveChannel(receiveChannel interface{})</code></p>
 				
 			<h2>type <a href="../cache.go#L35"><a id="L35"></a>Cache</a></h2>
 			
@@ -219,30 +219,30 @@ all POST operations
 			
 			<p><pre><a id="L50"></a>type CacheBackend struct {
     // contains unexported fields
-<a id="L54"></a>}</pre></p>
-				<h3>func <a href="../cache.go#L120">NewCacheBackend</a></h3>
-				<p><code><a id="L120"></a>func NewCacheBackend(user Cache, status Cache, expireTime int64) *CacheBackend</code></p>
+<a id="L56"></a>}</pre></p>
+				<h3>func <a href="../cache.go#L126">NewCacheBackend</a></h3>
+				<p><code><a id="L126"></a>func NewCacheBackend(user Cache, status Cache, expireTime int64) <a id="L127"></a>*CacheBackend</code></p>
 				<p>
 Creates a custom cache backend
 </p>
 
-				<h3>func (<a id="L105"></a>*CacheBackend) <a href="../cache.go#L105">GetStatus</a></h3>
-				<p><code><a id="L105"></a>func (self *CacheBackend) GetStatus(id int64) Status</code></p>
+				<h3>func (<a id="L110"></a>*CacheBackend) <a href="../cache.go#L110">GetStatus</a></h3>
+				<p><code><a id="L110"></a>func (self *CacheBackend) GetStatus(id int64) Status</code></p>
 				
-				<h3>func (<a id="L101"></a>*CacheBackend) <a href="../cache.go#L101">GetUser</a></h3>
-				<p><code><a id="L101"></a>func (self *CacheBackend) GetUser(id int64) User</code></p>
+				<h3>func (<a id="L105"></a>*CacheBackend) <a href="../cache.go#L105">GetUser</a></h3>
+				<p><code><a id="L105"></a>func (self *CacheBackend) GetUser(id int64) User</code></p>
 				
-				<h3>func (<a id="L114"></a>*CacheBackend) <a href="../cache.go#L114">HasStatusExpired</a></h3>
-				<p><code><a id="L114"></a>func (self *CacheBackend) HasStatusExpired(id int64) bool</code></p>
+				<h3>func (<a id="L120"></a>*CacheBackend) <a href="../cache.go#L120">HasStatusExpired</a></h3>
+				<p><code><a id="L120"></a>func (self *CacheBackend) HasStatusExpired(id int64) bool</code></p>
 				
-				<h3>func (<a id="L109"></a>*CacheBackend) <a href="../cache.go#L109">HasUserExpired</a></h3>
-				<p><code><a id="L109"></a>func (self *CacheBackend) HasUserExpired(id int64) bool</code></p>
+				<h3>func (<a id="L115"></a>*CacheBackend) <a href="../cache.go#L115">HasUserExpired</a></h3>
+				<p><code><a id="L115"></a>func (self *CacheBackend) HasUserExpired(id int64) bool</code></p>
 				
-				<h3>func (<a id="L97"></a>*CacheBackend) <a href="../cache.go#L97">StoreStatus</a></h3>
-				<p><code><a id="L97"></a>func (self *CacheBackend) StoreStatus(status Status)</code></p>
+				<h3>func (<a id="L100"></a>*CacheBackend) <a href="../cache.go#L100">StoreStatus</a></h3>
+				<p><code><a id="L100"></a>func (self *CacheBackend) StoreStatus(status Status)</code></p>
 				
-				<h3>func (<a id="L93"></a>*CacheBackend) <a href="../cache.go#L93">StoreUser</a></h3>
-				<p><code><a id="L93"></a>func (self *CacheBackend) StoreUser(user User)</code></p>
+				<h3>func (<a id="L95"></a>*CacheBackend) <a href="../cache.go#L95">StoreUser</a></h3>
+				<p><code><a id="L95"></a>func (self *CacheBackend) StoreUser(user User)</code></p>
 				
 			<h2>type <a href="../cache.go#L22"><a id="L22"></a>IdProvider</a></h2>
 			
@@ -254,20 +254,20 @@ Creates a custom cache backend
 			<p><pre><a id="L31"></a>type MemoryCache struct {
     // contains unexported fields
 <a id="L33"></a>}</pre></p>
-				<h3>func <a href="../cache.go#L130">NewMemoryCache</a></h3>
-				<p><code><a id="L130"></a>func NewMemoryCache() *MemoryCache</code></p>
+				<h3>func <a href="../cache.go#L138">NewMemoryCache</a></h3>
+				<p><code><a id="L138"></a>func NewMemoryCache() *MemoryCache</code></p>
 				
-				<h3>func (<a id="L77"></a>*MemoryCache) <a href="../cache.go#L77">Get</a></h3>
-				<p><code><a id="L77"></a>func (self *MemoryCache) Get(id int64) IdProvider</code></p>
+				<h3>func (<a id="L79"></a>*MemoryCache) <a href="../cache.go#L79">Get</a></h3>
+				<p><code><a id="L79"></a>func (self *MemoryCache) Get(id int64) IdProvider</code></p>
 				
-				<h3>func (<a id="L85"></a>*MemoryCache) <a href="../cache.go#L85">GetTimeStored</a></h3>
-				<p><code><a id="L85"></a>func (self *MemoryCache) GetTimeStored(id int64) int64</code></p>
+				<h3>func (<a id="L87"></a>*MemoryCache) <a href="../cache.go#L87">GetTimeStored</a></h3>
+				<p><code><a id="L87"></a>func (self *MemoryCache) GetTimeStored(id int64) int64</code></p>
 				
-				<h3>func (<a id="L72"></a>*MemoryCache) <a href="../cache.go#L72">HasId</a></h3>
-				<p><code><a id="L72"></a>func (self *MemoryCache) HasId(id int64) bool</code></p>
+				<h3>func (<a id="L74"></a>*MemoryCache) <a href="../cache.go#L74">HasId</a></h3>
+				<p><code><a id="L74"></a>func (self *MemoryCache) HasId(id int64) bool</code></p>
 				
-				<h3>func (<a id="L56"></a>*MemoryCache) <a href="../cache.go#L56">Store</a></h3>
-				<p><code><a id="L56"></a>func (self *MemoryCache) Store(data IdProvider)</code></p>
+				<h3>func (<a id="L58"></a>*MemoryCache) <a href="../cache.go#L58">Store</a></h3>
+				<p><code><a id="L58"></a>func (self *MemoryCache) Store(data IdProvider)</code></p>
 				
 			<h2>type <a href="../status.go#L18"><a id="L18"></a>Status</a></h2>
 			
@@ -283,13 +283,13 @@ Creates a custom cache backend
     <a id="L27"></a>GetNow() int;
     <a id="L28"></a>GetUser() User;
 <a id="L29"></a>}</pre></p>
-			<h2>type <a href="../api.go#L54"><a id="L54"></a>TwitterError</a></h2>
+			<h2>type <a href="../api.go#L53"><a id="L53"></a>TwitterError</a></h2>
 			
-			<p><pre><a id="L54"></a>type TwitterError struct {
+			<p><pre><a id="L53"></a>type TwitterError struct {
     // contains unexported fields
-<a id="L56"></a>}</pre></p>
-				<h3>func (<a id="L69"></a>TwitterError) <a href="../api.go#L69">String</a></h3>
-				<p><code><a id="L69"></a>func (self TwitterError) String() string</code></p>
+<a id="L55"></a>}</pre></p>
+				<h3>func (<a id="L68"></a>TwitterError) <a href="../api.go#L68">String</a></h3>
+				<p><code><a id="L68"></a>func (self TwitterError) String() string</code></p>
 				<p>
 type that satisfies the os.Error interface
 </p>

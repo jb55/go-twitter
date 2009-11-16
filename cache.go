@@ -48,6 +48,8 @@ type Cache interface {
 }
 
 type CacheBackend struct {
+  hit int64;
+  store int64;
   userCache Cache;
   statusCache Cache;
   expireTime int64;
@@ -91,19 +93,23 @@ func (self *MemoryCache) GetTimeStored(id int64) int64 {
 }
 
 func (self *CacheBackend) StoreUser(user User) {
+  self.store++;
   self.userCache.Store(user);
 }
 
 func (self *CacheBackend) StoreStatus(status Status) {
+  self.store++;
   self.statusCache.Store(status);
 }
 
 func (self *CacheBackend) GetUser(id int64) User {
+  self.hit++;
   return self.userCache.Get(id).(User);
 }
 
 func (self *CacheBackend) GetStatus(id int64) Status {
-  return self.userCache.Get(id).(Status);
+  self.hit++;
+  return self.statusCache.Get(id).(Status);
 }
 
 func (self *CacheBackend) HasUserExpired(id int64) bool {
@@ -117,9 +123,11 @@ func (self *CacheBackend) HasStatusExpired(id int64) bool {
 }
 
 // Creates a custom cache backend
-func NewCacheBackend(user Cache, status Cache, expireTime int64) *CacheBackend {
+func NewCacheBackend(user Cache, status Cache, expireTime int64)
+                    (*CacheBackend) {
   backend := new(CacheBackend);
 
+  backend.hit = 0;
   backend.userCache = user;
   backend.statusCache = status;
   backend.expireTime = expireTime;

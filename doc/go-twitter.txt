@@ -37,7 +37,7 @@ errors.
 
    monitorErrors - listens to api errors and logs them
 
-   func monitorErrors(quit chan bool, errors chan os.Error) {
+   func monitorErrors(quit chan bool, errors <-chan os.Error) {
      for ;; {
        select {
        case err := <-errors:
