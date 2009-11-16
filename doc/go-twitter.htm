@@ -55,7 +55,7 @@ HTTP requests
 </p>
 
 				<h3>func (<a id="L354"></a>*Api) <a href="../api.go#L354">GetErrorChannel</a></h3>
-				<p><code><a id="L354"></a>func (self *Api) GetErrorChannel() chan os.Error</code></p>
+				<p><code><a id="L354"></a>func (self *Api) GetErrorChannel() &lt;-chan os.Error</code></p>
 				<p>
 Returns a channel which receives API errors. Can be used for logging
 errors.
@@ -76,7 +76,7 @@ func monitorErrors(quit chan bool, errors chan os.Error) {
 </pre>
 
 				<h3>func (<a id="L108"></a>*Api) <a href="../api.go#L108">GetFollowers</a></h3>
-				<p><code><a id="L108"></a>func (self *Api) GetFollowers(user interface{}, page int) chan []User</code></p>
+				<p><code><a id="L108"></a>func (self *Api) GetFollowers(user interface{}, page int) &lt;-chan []User</code></p>
 				<p>
 Gets the followers for a given user represented by a slice
 of twitter.User instances
@@ -95,7 +95,7 @@ page:
 </pre>
 
 				<h3>func (<a id="L122"></a>*Api) <a href="../api.go#L122">GetFriends</a></h3>
-				<p><code><a id="L122"></a>func (self *Api) GetFriends(user interface{}, page int) chan []User</code></p>
+				<p><code><a id="L122"></a>func (self *Api) GetFriends(user interface{}, page int) &lt;-chan []User</code></p>
 				<p>
 Gets the friends for a given user represented by a slice
 of twitter.User instances
@@ -114,7 +114,7 @@ page:
 </pre>
 
 				<h3>func (<a id="L172"></a>*Api) <a href="../api.go#L172">GetFriendsTimeline</a></h3>
-				<p><code><a id="L172"></a>func (self *Api) GetFriendsTimeline() chan []Status</code></p>
+				<p><code><a id="L172"></a>func (self *Api) GetFriendsTimeline() &lt;-chan []Status</code></p>
 				<p>
 Returns the 20 most recent statuses posted by the authenticating user and
 that user&#39;s friends. This is the equivalent of /timeline/home on the Web.
@@ -130,20 +130,20 @@ unless another error has occured.
 </p>
 
 				<h3>func (<a id="L149"></a>*Api) <a href="../api.go#L149">GetPublicTimeline</a></h3>
-				<p><code><a id="L149"></a>func (self *Api) GetPublicTimeline() chan []Status</code></p>
+				<p><code><a id="L149"></a>func (self *Api) GetPublicTimeline() &lt;-chan []Status</code></p>
 				<p>
 Retrieves the public timeline as a slice of Status objects
 </p>
 
 				<h3>func (<a id="L184"></a>*Api) <a href="../api.go#L184">GetReplies</a></h3>
-				<p><code><a id="L184"></a>func (self *Api) GetReplies() chan []Status</code></p>
+				<p><code><a id="L184"></a>func (self *Api) GetReplies() &lt;-chan []Status</code></p>
 				<p>
 Returns the 20 most recent mentions for the authenticated user
 Returns the statuses as a slice of Status objects
 </p>
 
 				<h3>func (<a id="L395"></a>*Api) <a href="../api.go#L395">GetStatus</a></h3>
-				<p><code><a id="L395"></a>func (self *Api) GetStatus(id int64) chan Status</code></p>
+				<p><code><a id="L395"></a>func (self *Api) GetStatus(id int64) &lt;-chan Status</code></p>
 				<p>
 Gets a Twitter status given a status id
 </p>
@@ -158,7 +158,7 @@ Returns: a channel which receives a twitter.Status object when
 </pre>
 
 				<h3>func (<a id="L160"></a>*Api) <a href="../api.go#L160">GetUserTimeline</a></h3>
-				<p><code><a id="L160"></a>func (self *Api) GetUserTimeline() chan []Status</code></p>
+				<p><code><a id="L160"></a>func (self *Api) GetUserTimeline() &lt;-chan []Status</code></p>
 				<p>
 Retrieves the currently authorized user&#39;s
 timeline as a slice of Status objects
@@ -178,7 +178,7 @@ Authentication
 </p>
 
 				<h3>func (<a id="L361"></a>*Api) <a href="../api.go#L361">PostUpdate</a></h3>
-				<p><code><a id="L361"></a>func (self *Api) PostUpdate(status string, inReplyToId int64) chan bool</code></p>
+				<p><code><a id="L361"></a>func (self *Api) PostUpdate(status string, inReplyToId int64) &lt;-chan bool</code></p>
 				<p>
 Post a Twitter status message to the authenticated user
 </p>

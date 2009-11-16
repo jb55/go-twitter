@@ -111,7 +111,7 @@ func verifyValidStatus(s Status, t *testing.T) {
   assertNotNil(s.GetUser(), "GetUser", t);
 }
 
-func getAllApiErrors(errors chan os.Error, t *testing.T) {
+func getAllApiErrors(errors <-chan os.Error, t *testing.T) {
   if len(errors) == 0 {
     return;
   }
