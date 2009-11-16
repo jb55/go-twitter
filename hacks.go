@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// generic.go - a collection of hacks that wouldn't be needed if there were
+// hacks.go - a collection of hacks that wouldn't be needed if there were
 //              generics
 package twitter
 

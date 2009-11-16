@@ -40,7 +40,7 @@ func main() {
                 status.GetText());
   }
 
-  showFollowers(api, "jb55");
+  showFriends(api, "jb55");
 
   for i := 0; api.HasErrors(); i++ {
     fmt.Printf("Error #%d: %s\n", i, <-errors);
@@ -54,5 +54,12 @@ func showFollowers(api *twitter.Api, user interface{}) {
 
   for _, follower := range followers {
     fmt.Printf("%v\n", follower.GetName());
+  }
+}
+func showFriends(api *twitter.Api, user interface{}) {
+  friends := <-api.GetFriends(user, 0);
+
+  for _, friend := range friends {
+    fmt.Printf("%v\n", friend.GetName());
   }
 }

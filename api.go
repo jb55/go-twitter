@@ -37,8 +37,9 @@ const (
   _QUERY_USERTIMELINE = "%sstatuses/user_timeline.%s";
   _QUERY_REPLIES = "%sstatuses/mentions.%s";
   _QUERY_FRIENDSTIMELINE = "%sstatuses/friends_timeline.%s";
-  _QUERY_FOLLOWERS_USER = "%sstatuses/followers.%s?screen_name=%s";
-  _QUERY_FOLLOWERS_ID = "%sstatuses/followers.%s?user_id=%d";
+  _QUERY_USER_NAME = "%sstatuses/%s.%s?screen_name=%s";
+  _QUERY_USER_ID = "%sstatuses/%s.%s?user_id=%d";
+  _QUERY_USER_DEFAULT = "%sstatuses/%s.%s";
 )
 
 const (
@@ -105,22 +106,30 @@ func (self *Api) SetCacheBackend(backend *CacheBackend) {
 // page:
 //  Not yet implemented
 func (self *Api) GetFollowers(user interface{}, page int) chan []User {
+  return self.getUsersByType(user, page, "followers");
+}
+
+// Gets the friends for a given user represented by a slice
+// of twitter.User instances
+//
+// user:
+//  A user id or name to fetch the friends from. If this argument
+//  is nil, then the friends are fetched from the authenticated user.
+//  This paramater must be an int, int64, or string.
+//
+// page:
+//  Not yet implemented
+func (self *Api) GetFriends(user interface{}, page int) chan []User {
+  return self.getUsersByType(user, page, "friends");
+}
+
+func (self *Api) getUsersByType(user interface{}, page int, typ string)
+                               (chan []User) {
   var url string;
+  var ok bool;
   responseChannel := self.buildRespChannel(_SLICEUSER).(chan []User);
 
-  switch(reflect.Typeof(user)) {
-  case reflect.Typeof(""):
-    url = fmt.Sprintf(_QUERY_FOLLOWERS_USER, kTwitterUrl, kFormat, user.(string));
-    break;
-  case reflect.Typeof(int64(1)):
-    url = fmt.Sprintf(_QUERY_FOLLOWERS_ID, kTwitterUrl, kFormat, user.(int64));
-    break;
-  case reflect.Typeof(int(1)):
-    url = fmt.Sprintf(_QUERY_FOLLOWERS_ID, kTwitterUrl, kFormat, user.(int));
-    break;
-  default:
-    self.reportError("User parameter must be a string, int, or int64");
-
+  if url, ok = self.buildUserUrl(typ, user, page); !ok {
     responseChannel <- nil;
     return responseChannel;
   }
@@ -128,6 +137,7 @@ func (self *Api) GetFollowers(user interface{}, page int) chan []User {
   go self.goGetUsers(url, responseChannel);
   return responseChannel;
 }
+
 
 
 // Checks to see if there are any errors in the error channel
@@ -451,4 +461,31 @@ func (self *Api) getJsonFromUrl(url string) string {
   }
 
   return data;
+}
+
+func (self *Api) buildUserUrl(typ string, user interface{}, page int)
+                             (string, bool) {
+  var url string;
+
+  if user == nil {
+    url = fmt.Sprintf(_QUERY_USER_DEFAULT, kTwitterUrl, typ, kFormat);
+    return url, true;
+  }
+
+  switch(reflect.Typeof(user)) {
+  case reflect.Typeof(""):
+    url = fmt.Sprintf(_QUERY_USER_NAME, kTwitterUrl, typ, kFormat, user.(string));
+    break;
+  case reflect.Typeof(int64(1)):
+    url = fmt.Sprintf(_QUERY_USER_ID, kTwitterUrl, typ, kFormat, user.(int64));
+    break;
+  case reflect.Typeof(int(1)):
+    url = fmt.Sprintf(_QUERY_USER_ID, kTwitterUrl, typ, kFormat, user.(int));
+    break;
+  default:
+    self.reportError("User parameter must be a string, int, or int64");
+    return "", false;
+  }
+
+  return url, true;
 }

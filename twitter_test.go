@@ -35,6 +35,29 @@ func TestValidFollowerList(t *testing.T) {
   api := NewApi();
   errors := api.GetErrorChannel();
   users := <-api.GetFollowers("jb55", 0);
+  length := len(users);
+
+  if length <= 1 {
+    t.Errorf("len(GetFollowers()) <= 1, got %d expected > 1", length);
+  }
+
+  for _, user := range users {
+    verifyValidUser(user, t);
+    verifyValidStatus(user.GetStatus(), t);
+  }
+
+  getAllApiErrors(errors, t);
+}
+
+func TestValidFriendsList(t *testing.T) {
+  api := NewApi();
+  errors := api.GetErrorChannel();
+  users := <-api.GetFriends("jb55", 0);
+  length := len(users);
+
+  if length <= 1 {
+    t.Errorf("len(GetFriends()) <= 1, got %d expected > 1", length);
+  }
 
   for _, user := range users {
     verifyValidUser(user, t);

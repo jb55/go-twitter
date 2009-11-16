@@ -17,9 +17,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-generic.go - a collection of hacks that wouldn't be needed if there were
-             generics
-
 
 TYPES
 
@@ -59,6 +56,18 @@ of twitter.User instances
 user:
  A user id or name to fetch the followers from. If this argument
  is nil, then the followers are fetched from the authenticated user.
+ This paramater must be an int, int64, or string.
+
+page:
+ Not yet implemented
+
+func (self *Api) GetFriends(user interface{}, page int) chan []User
+Gets the friends for a given user represented by a slice
+of twitter.User instances
+
+user:
+ A user id or name to fetch the friends from. If this argument
+ is nil, then the friends are fetched from the authenticated user.
  This paramater must be an int, int64, or string.
 
 page:
