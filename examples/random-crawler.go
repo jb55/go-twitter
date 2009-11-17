@@ -26,6 +26,12 @@ func crawl(userName string, level int) {
   }
 
   fmt.Printf("%s: %s\n", userName, text);
+
+  level++;
+  if level > kMaxDepth {
+    return;
+  }
+
   // Get the user's friends
   friends := <-api.GetFriends(userName, 1);
   length := len(friends);
@@ -38,9 +44,5 @@ func crawl(userName string, level int) {
   // Choose a random friend for the next user
   nextUser := friends[rVal].GetScreenName();
 
-  level++;
-  if level > kMaxDepth {
-    return;
-  }
   crawl(nextUser, level);
 }
