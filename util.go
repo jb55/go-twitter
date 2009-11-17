@@ -19,6 +19,7 @@ import (
   "io";
   "os";
   "http";
+  "fmt";
 )
 
 func fixBrokenJson(j string) string {
@@ -32,4 +33,22 @@ func parseResponse(response *http.Response) (string, os.Error) {
   bStr := string(b);
 
   return bStr, nil;
+}
+
+func addQueryVariables(url string, variables map[string] string) string {
+  var addition string;
+  newUrl := url;
+
+  i := 0;
+  for key, value := range variables {
+    if i == 0 {
+      addition = fmt.Sprintf("?%s=%s", key, http.URLEscape(value));
+    } else {
+      addition = fmt.Sprintf("&%s=%s", key, http.URLEscape(value));
+    }
+    newUrl += addition;
+    i++;
+  }
+
+  return newUrl;
 }

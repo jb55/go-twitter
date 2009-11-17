@@ -39,17 +39,17 @@ func TestValidStatus(t *testing.T) {
 
 func TestValidUser(t *testing.T) {
   api := NewApi();
-  cache = api.cacheBackend;
+  api.SetCache(cache);
   errors := api.GetErrorChannel();
 
-  fmt.Printf("<-api.GetUser() ...\n");
+  fmt.Printf("<-api.GetUserById() ...\n");
 
   // this should be cached from our first test
   // kId is a status id from my twitter account,
   // and it should have grabbed my user info
   // when it grabbed the status
   hitBefore := cache.hit;
-  user := <-api.GetUser(9918032);
+  user := <-api.GetUserById(9918032);
   hitAfter := cache.hit;
 
   if hitBefore == hitAfter {
@@ -63,7 +63,7 @@ func TestValidUser(t *testing.T) {
 
 func TestCacheStoredNotZero(t *testing.T) {
   api := NewApi();
-  api.SetCacheBackend(cache);
+  api.SetCache(cache);
   errors := api.GetErrorChannel();
 
   stored := cache.store;
@@ -74,7 +74,7 @@ func TestCacheStoredNotZero(t *testing.T) {
 
 func TestCacheGet(t *testing.T) {
   api := NewApi();
-  api.SetCacheBackend(cache);
+  api.SetCache(cache);
   errors := api.GetErrorChannel();
   var last, current Status;
   last = nil;
@@ -94,7 +94,7 @@ func TestCacheGet(t *testing.T) {
 
 func TestValidFollowerList(t *testing.T) {
   api := NewApi();
-  api.SetCacheBackend(cache);
+  api.SetCache(cache);
   errors := api.GetErrorChannel();
   fmt.Printf("<-api.GetFollowers() ...\n");
   users := <-api.GetFollowers("jb55", 0);
@@ -116,7 +116,7 @@ func TestValidFollowerList(t *testing.T) {
 
 func TestValidFriendsList(t *testing.T) {
   api := NewApi();
-  api.SetCacheBackend(cache);
+  api.SetCache(cache);
   errors := api.GetErrorChannel();
   fmt.Printf("<-api.GetFriends() ...\n");
   users := <-api.GetFriends("jb55", 0);
@@ -136,9 +136,28 @@ func TestValidFriendsList(t *testing.T) {
   getAllApiErrors(errors, t);
 }
 
+func TestValidSearchResults(t *testing.T) {
+  api := NewApi();
+  api.SetCache(cache);
+  errors := api.GetErrorChannel();
+  fmt.Printf("<-api.SearchSimple() ...\n");
+  results := <-api.SearchSimple("#ff");
+  length := len(results);
+
+  if length <= 1 {
+    t.Errorf("len(SearchSimple()) <= 1, got %d expected > 1", length);
+  }
+
+  for _, result := range results {
+    verifyValidSearchResult(result, t);
+  }
+
+  getAllApiErrors(errors, t);
+}
+
 func TestValidPublicTimeLine(t *testing.T) {
   api := NewApi();
-  api.SetCacheBackend(cache);
+  api.SetCache(cache);
   errors := api.GetErrorChannel();
   fmt.Printf("<-api.GetPublicTimeline() ...\n");
   statuses := <-api.GetPublicTimeline();
@@ -181,6 +200,11 @@ func verifyValidStatus(s Status, t *testing.T) {
   assertNotEmpty(s.GetCreatedAt(), "GetCreatedAt", t);
   assertNotEmpty(s.GetText(), "GetText", t);
   assertNotNil(s.GetUser(), "GetUser", t);
+}
+
+func verifyValidSearchResult(r SearchResult, t *testing.T) {
+  assertGreaterThanZero(r.GetId(), "GetId", t);
+  assertNotEmpty(r.GetText(), "GetText", t);
 }
 
 func getAllApiErrors(errors <-chan os.Error, t *testing.T) {

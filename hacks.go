@@ -33,4 +33,8 @@ type tTwitterUserDummy struct {
   Object tTwitterUser;
 }
 
+type tTwitterSearchDummy struct {
+  Object tTwitterSearch;
+}
+
 // I should probably put http_auth.go in here as well

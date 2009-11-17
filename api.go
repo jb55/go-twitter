@@ -20,30 +20,33 @@ import (
   "fmt";
   "os";
   "json";
+  "strconv";
 )
 
 const (
-  kTwitterUrl = "http://www.twitter.com/";
   kDefaultClient = "go-twitter";
-  kFormat = "json";
   kErr = "GoTwitter Error: ";
   kWarn = "GoTwitter Warning: ";
   kDefaultTimelineAlloc = 20;
 
-  _QUERY_GETSTATUS = "%sstatuses/show/%d.%s";
-  _QUERY_UPDATESTATUS = "%sstatuses/update/update.%s";
-  _QUERY_PUBLICTIMELINE = "%sstatuses/public_timeline.%s";
-  _QUERY_USERTIMELINE = "%sstatuses/user_timeline.%s";
-  _QUERY_REPLIES = "%sstatuses/mentions.%s";
-  _QUERY_FRIENDSTIMELINE = "%sstatuses/friends_timeline.%s";
-  _QUERY_USER_NAME = "%s%s.%s?screen_name=%s";
-  _QUERY_USER_ID = "%s%s.%s?user_id=%d";
-  _QUERY_USER_DEFAULT = "%s%s.%s";
+  _QUERY_GETSTATUS = "http://www.twitter.com/statuses/show/%d.json";
+  _QUERY_UPDATESTATUS = "http://www.twitter.com/statuses/update/update.json";
+  _QUERY_PUBLICTIMELINE =
+    "http://www.twitter.com/statuses/public_timeline.json";
+  _QUERY_USERTIMELINE = "http://www.twitter.com/statuses/user_timeline.json";
+  _QUERY_REPLIES = "http://www.twitter.com/statuses/mentions.json";
+  _QUERY_FRIENDSTIMELINE =
+    "http://www.twitter.com/statuses/friends_timeline.json";
+  _QUERY_USER_NAME = "http://www.twitter.com/%s.json?screen_name=%s";
+  _QUERY_USER_ID = "http://www.twitter.com/%s.json?user_id=%d";
+  _QUERY_USER_DEFAULT = "http://www.twitter.com/%s.json";
+  _QUERY_SEARCH = "http://search.twitter.com/search.json";
 )
 
 const (
   _STATUS = iota;
   _SLICESTATUS;
+  _SLICESEARCH;
   _USER;
   _SLICEUSER;
   _BOOL;
@@ -90,7 +93,7 @@ func (self *Api) GetLastError() os.Error {
   return last;
 }
 
-func (self *Api) SetCacheBackend(backend *CacheBackend) {
+func (self *Api) SetCache(backend *CacheBackend) {
   self.cacheBackend = backend;
 }
 
@@ -137,29 +140,99 @@ func (self *Api) getUsersByType(user interface{}, page int, typ string)
   return responseChannel;
 }
 
-func (self *Api) GetUser(user interface{}) <-chan User {
+// Performs a simple Twitter search. Returns a slice of twitter.SearchResult
+// instances
+//
+// query:
+//  The string of text to search for. This is URL encoded automatically.
+func (self *Api) SearchSimple(query string) <-chan []SearchResult {
+  return self.Search(query, 0, 0, 0, "", "");
+}
+
+// Performs a Twitter search. Returns a slice of twitter.SearchResult instances
+// string fields are automatically URL Encoded
+// query:
+//  The string of text to search for.
+// page:
+//  The page of results to return. Set to 0 to use the default value.
+// perPage:
+//  The number of results per page. Set to 0 to use the default value.
+// sinceId:
+//  Return tweets with status ids greater than the given id. Set to 0
+//  to use the default value.
+// locale:
+//  Specify the language of the query you are sending (only ja is currently 
+//  effective). This is intended for language-specific clients and the default
+//  should work in the majority of cases. Set to an empty string to use
+//  the default value.
+// lang:
+//  Restricts tweets to the given language, given by an ISO 639-1 code.
+//  Set to an empty string to use the default value.
+func (self *Api) Search(query string, page int, perPage int,
+                        sinceId int, locale string, lang string)
+                       (<-chan []SearchResult) {
+  variables := make(map[string] string);
+  url := _QUERY_SEARCH;
+  responseChannel := self.buildRespChannel(_SLICESEARCH).(chan []SearchResult);
+
+  variables["q"] = query;
+
+  if page >= 2 {
+    variables["page"] = strconv.Itoa(page);
+  }
+
+  if perPage > 0 {
+    variables["rpp"] = strconv.Itoa(perPage);
+  }
+
+  if sinceId > 0 {
+    variables["since_id"] = strconv.Itoa(sinceId);
+  }
+
+  if locale != "" {
+    variables["locale"] = locale;
+  }
+
+  if lang != "" {
+    variables["lang"] = lang;
+  }
+
+  url = addQueryVariables(url, variables);
+  go self.goGetSearchResults(url, responseChannel);
+
+  return responseChannel;
+}
+
+// Returns a channel which receives a twitter.User instance for the given
+// username.
+//
+// id:
+//  A twiter user id
+func (self *Api) GetUserById(id int64) <-chan User {
   var url string;
   var ok bool;
-  var userId int64 = 0;
   responseChannel := self.buildRespChannel(_USER).(chan User);
 
-  // TODO: use username as the cache key instead of id
-  switch user.(type) {
-  case int:
-    userId = int64(user.(int));
-    break;
-  case int64:
-    userId = user.(int64);
+  if url, ok = self.buildUserUrl("users/show", id, 0); !ok {
+    responseChannel <- nil;
+    return responseChannel;
   }
 
-  if userId != 0 {
-    if cached, hasCached := self.getCachedUser(userId); hasCached {
-      responseChannel <- cached;
-      return responseChannel;
-    }
-  }
+  go self.goGetUser(url, responseChannel);
+  return responseChannel;
+}
 
-  if url, ok = self.buildUserUrl("users/show", user, 0); !ok {
+// Returns a channel which receives a twitter.User instance for the given
+// username.
+//
+// name:
+//  The screenname of the user
+func (self *Api) GetUser(name string) <-chan User {
+  var url string;
+  var ok bool;
+  responseChannel := self.buildRespChannel(_USER).(chan User);
+
+  if url, ok = self.buildUserUrl("users/show", name, 0); !ok {
     responseChannel <- nil;
     return responseChannel;
   }
@@ -176,10 +249,7 @@ func (self *Api) HasErrors() bool {
 // Retrieves the public timeline as a slice of Status objects
 func (self *Api) GetPublicTimeline() <-chan []Status {
   responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
-
-  url := fmt.Sprintf(_QUERY_PUBLICTIMELINE, kTwitterUrl, kFormat);
-  go self.goGetStatuses(url, responseChannel);
-
+  go self.goGetStatuses(_QUERY_PUBLICTIMELINE, responseChannel);
   return responseChannel;
 }
 
@@ -187,10 +257,7 @@ func (self *Api) GetPublicTimeline() <-chan []Status {
 // timeline as a slice of Status objects
 func (self *Api) GetUserTimeline() <-chan []Status {
   responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
-
-  url := fmt.Sprintf(_QUERY_USERTIMELINE, kTwitterUrl, kFormat);
-  go self.goGetStatuses(url, responseChannel);
-
+  go self.goGetStatuses(_QUERY_USERTIMELINE, responseChannel);
   return responseChannel;
 }
 
@@ -198,12 +265,8 @@ func (self *Api) GetUserTimeline() <-chan []Status {
 // that user's friends. This is the equivalent of /timeline/home on the Web.
 // Returns the statuses as a slice of Status objects
 func (self *Api) GetFriendsTimeline() <-chan []Status {
-
   responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
-
-  url := fmt.Sprintf(_QUERY_FRIENDSTIMELINE, kTwitterUrl, kFormat);
-  go self.goGetStatuses(url, responseChannel);
-
+  go self.goGetStatuses(_QUERY_FRIENDSTIMELINE, responseChannel);
   return responseChannel;
 }
 
@@ -211,9 +274,7 @@ func (self *Api) GetFriendsTimeline() <-chan []Status {
 // Returns the statuses as a slice of Status objects
 func (self *Api) GetReplies() <-chan []Status {
   responseChannel := self.buildRespChannel(_SLICESTATUS).(chan []Status);
-
-  url := fmt.Sprintf(_QUERY_REPLIES, kTwitterUrl, kFormat);
-  go self.goGetStatuses(url, responseChannel);
+  go self.goGetStatuses(_QUERY_REPLIES, responseChannel);
   return responseChannel;
 }
 
@@ -233,6 +294,11 @@ func (self *Api) buildRespChannel(channelType int) interface {} {
       break;
     case _SLICESTATUS:
       if _, ok := self.receiveChannel.(chan []Status); ok {
+        return self.receiveChannel;
+      }
+      break;
+    case _SLICESEARCH:
+      if _, ok := self.receiveChannel.(chan []SearchResult); ok {
         return self.receiveChannel;
       }
       break;
@@ -263,6 +329,8 @@ func (self *Api) buildRespChannel(channelType int) interface {} {
     return make(chan Status, size);
   case _SLICESTATUS:
     return make(chan []Status, size);
+  case _SLICESEARCH:
+    return make(chan []SearchResult, size);
   case _USER:
     return make(chan User, size);
   case _SLICEUSER:
@@ -285,6 +353,28 @@ func (self *Api) goGetUsers(url string, responseChannel chan []User) {
   responseChannel <- self.getUsers(url);
 }
 
+func (self *Api) goGetSearchResults(url string,
+                                    responseChannel chan []SearchResult) {
+  var searchDummy tTwitterSearchDummy;
+  var results []SearchResult;
+
+  jsonString := self.getJsonFromUrl(url);
+  json.Unmarshal(jsonString, &searchDummy);
+
+  dummyLen := len(searchDummy.Object.Results);
+  results = make([]SearchResult, dummyLen);
+
+  for i := 0; i < dummyLen; i++ {
+    result := &searchDummy.Object.Results[i];
+    results[i] = result;
+    if err := result.GetError(); err != "" {
+      self.reportError(err);
+    }
+  }
+
+  responseChannel <- results;
+}
+
 func (self *Api) getStatuses(url string) []Status {
   var timelineDummy tTwitterTimelineDummy;
   var timeline []Status;
@@ -301,8 +391,6 @@ func (self *Api) getStatuses(url string) []Status {
     if err := status.GetError(); err != "" {
       self.reportError(err);
     } else {
-      self.cacheBackend.StoreStatus(status);
-      self.cacheBackend.StoreUser(status.GetUser());
     }
   }
 
@@ -328,9 +416,6 @@ func (self *Api) getUsers(url string) []User {
     users[i] = user;
     if err := user.GetError(); err != "" {
       self.reportError(err);
-    } else  {
-      self.cacheBackend.StoreUser(user);
-      self.cacheBackend.StoreStatus(user.GetStatus());
     }
   }
 
@@ -357,14 +442,14 @@ func (self *Api) init() {
 
 // Sets the username and password string for all subsequent authorized
 // HTTP requests
-func (self *Api) Authenticate(username, password string) {
+func (self *Api) SetCredentials(username, password string) {
   self.user = username;
   self.pass = password;
 }
 
 // Disable Twitter authentication, subsequent REST calls will not use
 // Authentication
-func (self *Api) Logout() {
+func (self *Api) ClearCredentials() {
   self.user = "";
   self.pass = "";
 }
@@ -402,7 +487,7 @@ func (self *Api) PostUpdate(status string, inReplyToId int64) <-chan bool  {
 
 func (self *Api) goPostUpdate(status string, inReplyToId int64,
                               response chan bool) {
-  url := fmt.Sprintf(_QUERY_UPDATESTATUS, kTwitterUrl, kFormat);
+  url := _QUERY_UPDATESTATUS;
   var data string;
 
   data = "status=" + http.URLEscape(status);
@@ -468,16 +553,13 @@ func (self *Api) goGetUser(url string, response chan User) {
   u := &(user.Object);
   if err := u.GetError(); err != "" {
     self.reportError(err);
-  } else {
-    self.cacheBackend.StoreUser(u);
-    self.cacheBackend.StoreStatus(u.GetStatus());
   }
 
   response <- u;
 }
 
 func (self *Api) goGetStatus(id int64, response chan Status) {
-  url := fmt.Sprintf(_QUERY_GETSTATUS, kTwitterUrl, id, kFormat);
+  url := fmt.Sprintf(_QUERY_GETSTATUS, id);
   var status tTwitterStatusDummy;
   jsonString := self.getJsonFromUrl(url);
   json.Unmarshal(jsonString, &status);
@@ -485,9 +567,6 @@ func (self *Api) goGetStatus(id int64, response chan Status) {
   s := &(status.Object);
   if err := s.GetError(); err != "" {
     self.reportError(err);
-  } else {
-    self.cacheBackend.StoreStatus(s);
-    self.cacheBackend.StoreUser(s.GetUser());
   }
 
   response <- s;
@@ -530,19 +609,19 @@ func (self *Api) buildUserUrl(typ string, user interface{}, page int)
   var url string;
 
   if user == nil {
-    url = fmt.Sprintf(_QUERY_USER_DEFAULT, kTwitterUrl, typ, kFormat);
+    url = fmt.Sprintf(_QUERY_USER_DEFAULT, typ);
     return url, true;
   }
 
   switch(user.(type)) {
   case string:
-    url = fmt.Sprintf(_QUERY_USER_NAME, kTwitterUrl, typ, kFormat, user.(string));
+    url = fmt.Sprintf(_QUERY_USER_NAME, typ, user.(string));
     break;
   case int64:
-    url = fmt.Sprintf(_QUERY_USER_ID, kTwitterUrl, typ, kFormat, user.(int64));
+    url = fmt.Sprintf(_QUERY_USER_ID, typ, user.(int64));
     break;
   case int:
-    url = fmt.Sprintf(_QUERY_USER_ID, kTwitterUrl, typ, kFormat, user.(int));
+    url = fmt.Sprintf(_QUERY_USER_ID, typ, user.(int));
     break;
   default:
     self.reportError("User parameter must be a string, int, or int64");

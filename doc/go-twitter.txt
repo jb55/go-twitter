@@ -27,9 +27,9 @@ type Api struct {
 func NewApi() *Api
 Creates and initializes new Api objec
 
-func (self *Api) Authenticate(username, password string)
-Sets the username and password string for all subsequent authorized
-HTTP requests
+func (self *Api) ClearCredentials()
+Disable Twitter authentication, subsequent REST calls will not use
+Authentication
 
 func (self *Api) GetErrorChannel() <-chan os.Error
 Returns a channel which receives API errors. Can be used for logging
@@ -99,6 +99,20 @@ is private
 Returns: a channel which receives a twitter.Status object when
          the request is completed
 
+func (self *Api) GetUser(name string) <-chan User
+Returns a channel which receives a twitter.User instance for the given
+username.
+
+name:
+ The screenname of the user
+
+func (self *Api) GetUserById(id int64) <-chan User
+Returns a channel which receives a twitter.User instance for the given
+username.
+
+id:
+ A twiter user id
+
 func (self *Api) GetUserTimeline() <-chan []Status
 Retrieves the currently authorized user's
 timeline as a slice of Status objects
@@ -106,20 +120,48 @@ timeline as a slice of Status objects
 func (self *Api) HasErrors() bool
 Checks to see if there are any errors in the error channel
 
-func (self *Api) Logout()
-Disable Twitter authentication, subsequent REST calls will not use
-Authentication
-
 func (self *Api) PostUpdate(status string, inReplyToId int64) <-chan bool
 Post a Twitter status message to the authenticated user
 
 The twitter.Api instance must be authenticated
 
-func (self *Api) SetCacheBackend(backend *CacheBackend)
+func (self *Api) Search(query string, page int, perPage int, sinceId int, locale string, lang string) <-chan []SearchResult
+Performs a Twitter search. Returns a slice of twitter.SearchResult instances
+string fields are automatically URL Encoded
+query:
+ The string of text to search for.
+page:
+ The page of results to return. Set to 0 to use the default value.
+perPage:
+ The number of results per page. Set to 0 to use the default value.
+sinceId:
+ Return tweets with status ids greater than the given id. Set to 0
+ to use the default value.
+locale:
+ Specify the language of the query you are sending (only ja is currently
+ effective). This is intended for language-specific clients and the default
+ should work in the majority of cases. Set to an empty string to use
+ the default value.
+lang:
+ Restricts tweets to the given language, given by an ISO 639-1 code.
+ Set to an empty string to use the default value.
+
+func (self *Api) SearchSimple(query string) <-chan []SearchResult
+Performs a simple Twitter search. Returns a slice of twitter.SearchResult
+instances
+
+query:
+ The string of text to search for. This is URL encoded automatically.
+
+func (self *Api) SetCache(backend *CacheBackend)
 
 func (self *Api) SetClientString(client string)
 Sets the Twitter client header, aka the X-Twitter-Client http header on
 all POST operations
+
+func (self *Api) SetCredentials(username, password string)
+Sets the username and password string for all subsequent authorized
+HTTP requests
 
 func (self *Api) SetReceiveChannel(receiveChannel interface{})
 
@@ -175,6 +217,18 @@ func (self *MemoryCache) HasId(id int64) bool
 
 func (self *MemoryCache) Store(data IdProvider)
 
+type SearchResult interface {
+    GetCreatedAt() string;
+    GetFromUser() string;
+    GetToUserId() int64;
+    GetText() string;
+    GetId() int64;
+    GetFromUserId() int64;
+    GetGeo() string;
+    GetIsoLanguageCode() string;
+    GetSource() string;
+}
+
 type Status interface {
     GetCreatedAt() string;
     GetCreatedAtInSeconds() int;
@@ -186,6 +240,7 @@ type Status interface {
     GetInReplyToUserId() int64;
     GetNow() int;
     GetUser() User;
+    // contains unexported methods
 }
 
 type TwitterError struct {
@@ -212,9 +267,11 @@ type User interface {
     GetTimeZone() string;
     GetURL() string;
     GetStatus() Status;
+
     GetStatusesCount() int;
     GetFollowersCount() int;
     GetFriendsCount() int;
     GetFavoritesCount() int;
+    // contains unexported methods
 }
 
