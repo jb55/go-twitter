@@ -5,7 +5,7 @@ import "fmt"
 import "time"
 import "rand"
 
-const kMaxDepth = 5
+const kMaxDepth = 25
 const kStart = "jb55"
 
 var api *twitter.Api;
@@ -41,6 +41,7 @@ func crawl(userName string, level int) {
   length := len(friends);
 
   if length == 0 {
+    done <- true;
     return;
   }
 
