@@ -10,11 +10,14 @@ const kStart = "jb55"
 
 var api *twitter.Api;
 var r *rand.Rand;
+var done chan bool;
 
 func main() {
   api = twitter.NewApi();
+  done = make(chan bool);
   r = rand.New(rand.NewSource(time.Seconds()));
   crawl(kStart, 0);
+  <-done;
 }
 
 func crawl(userName string, level int) {
@@ -29,6 +32,7 @@ func crawl(userName string, level int) {
 
   level++;
   if level > kMaxDepth {
+    done <- true;
     return;
   }
 
@@ -44,5 +48,5 @@ func crawl(userName string, level int) {
   // Choose a random friend for the next user
   nextUser := friends[rVal].GetScreenName();
 
-  crawl(nextUser, level);
+  go crawl(nextUser, level);
 }
