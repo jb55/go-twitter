@@ -37,7 +37,7 @@ func crawl(userName string, level int) {
   }
 
   // Get the user's friends
-  friends := <-api.GetFriends(userName, 1);
+  friends := api.GetFriends(userName, 1);
   length := len(friends);
 
   if length == 0 {

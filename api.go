@@ -25,6 +25,8 @@ import (
 
 const (
   kDefaultClient = "go-twitter";
+  kDefaultClientURL = "http://jb55.github.com/go-twitter";
+  kDefaultClientVersion = "0.1";
   kErr = "GoTwitter Error: ";
   kWarn = "GoTwitter Warning: ";
   kDefaultTimelineAlloc = 20;
@@ -63,6 +65,8 @@ type Api struct {
   errors chan os.Error;
   lastError os.Error;
   client string;
+  clientURL string;
+  clientVersion string;
   cacheBackend *CacheBackend;
   receiveChannel interface{};
 }
@@ -278,6 +282,23 @@ func (self *Api) GetReplies() <-chan []Status {
   return responseChannel;
 }
 
+// Set the X-Twitter HTTP headers that will be sent to the server.
+//
+// client:
+//   The client name as a string.  Will be sent to the server as
+//   the 'X-Twitter-Client' header.
+// url:
+//   The URL of the meta.xml as a string.  Will be sent to the server
+//   as the 'X-Twitter-Client-URL' header.
+// version:
+//   The client version as a string.  Will be sent to the server
+//   as the 'X-Twitter-Client-Version' header.
+func (self *Api) SetXTwitterHeaders(client, url, version string) {
+  self.client = client;
+  self.clientURL = url;
+  self.clientVersion = version;
+}
+
 // Builds a response channel for async function calls
 func (self *Api) buildRespChannel(channelType int) interface {} {
   const size = 1;
@@ -433,6 +454,8 @@ func (self *Api) init() {
   self.errors = make(chan os.Error, 16);
   self.receiveChannel = nil;
   self.client = kDefaultClient;
+  self.clientURL = kDefaultClientURL;
+  self.clientVersion = kDefaultClientVersion;
 
   // default cache
   userCache := NewMemoryCache();
@@ -496,7 +519,8 @@ func (self *Api) goPostUpdate(status string, inReplyToId int64,
     data += reply_data;
   }
 
-  _, err := httpPost(url, self.user, self.pass, self.client, data);
+  _, err := httpPost(url, self.user, self.pass,
+                     self.client, self.clientURL, self.clientVersion, data);
   if err != nil {
     self.reportError(kErr + err.String());
     response <- false;

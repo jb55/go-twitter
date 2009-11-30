@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// hacks.go - a collection of hacks that wouldn't be needed if there were
-//              generics
 package twitter
 
 type tTwitterStatusDummy struct {

@@ -114,7 +114,8 @@ func authGet(url, user, pwd string) (r *http.Response, err os.Error) {
 // Post issues a POST to the specified URL.
 //
 // Caller should close r.Body when done reading it.
-func authPost(url, user, pwd, client, bodyType string, body io.Reader)
+func authPost(url, user, pwd, client, clientURL, version,
+              bodyType string, body io.Reader)
              (r *http.Response, err os.Error) {
   var req http.Request;
   req.Method = "POST";
@@ -123,7 +124,8 @@ func authPost(url, user, pwd, client, bodyType string, body io.Reader)
     "Content-Type": bodyType,
     "Transfer-Encoding": "chunked",
     "X-Twitter-Client": client,
-    "X-Twitter-Version": "0.1",
+    "X-Twitter-Client-URL": clientURL,
+    "X-Twitter-Version": version,
     "Authorization": "Basic " + encodedUsernameAndPassword(user, pwd),
   };
 
@@ -153,7 +155,7 @@ func httpGet(url, user, pass string) (*http.Response, string, os.Error) {
 
 // Do an authenticated Post if we've called Authenticated, otherwise
 // just Post it without authentication
-func httpPost(url, user, pass, client, data string)
+func httpPost(url, user, pass, client, clientURL, version, data string)
              (*http.Response, os.Error) {
   var r *http.Response;
   var err os.Error;
@@ -162,7 +164,8 @@ func httpPost(url, user, pass, client, data string)
   bodyType := "application/x-www-form-urlencoded";
 
   if user != "" && pass != "" {
-    r, err = authPost(url, user, pass, client, bodyType, body);
+    r, err = authPost(url, user, pass,
+                      client, clientURL, version, bodyType, body);
   } else {
     r, err = http.Post(url, bodyType, body);
   }
