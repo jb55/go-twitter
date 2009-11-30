@@ -165,6 +165,19 @@ HTTP requests
 
 func (self *Api) SetReceiveChannel(receiveChannel interface{})
 
+func (self *Api) SetXTwitterHeaders(client, url, version string)
+Set the X-Twitter HTTP headers that will be sent to the server.
+
+client:
+  The client name as a string.  Will be sent to the server as
+  the 'X-Twitter-Client' header.
+url:
+  The URL of the meta.xml as a string.  Will be sent to the server
+  as the 'X-Twitter-Client-URL' header.
+version:
+  The client version as a string.  Will be sent to the server
+  as the 'X-Twitter-Client-Version' header.
+
 type Cache interface {
     // Stores a value in the database, the key is determined
     // by the GetId() function in the IdProvider interface
