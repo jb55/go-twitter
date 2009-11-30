@@ -27,6 +27,7 @@ const (
   kDefaultClient = "go-twitter";
   kDefaultClientURL = "http://jb55.github.com/go-twitter";
   kDefaultClientVersion = "0.1";
+  kDefaultUserAgent = "go-twitter";
   kErr = "GoTwitter Error: ";
   kWarn = "GoTwitter Warning: ";
   kDefaultTimelineAlloc = 20;
@@ -67,6 +68,7 @@ type Api struct {
   client string;
   clientURL string;
   clientVersion string;
+  userAgent string;
   cacheBackend *CacheBackend;
   receiveChannel interface{};
 }
@@ -456,11 +458,16 @@ func (self *Api) init() {
   self.client = kDefaultClient;
   self.clientURL = kDefaultClientURL;
   self.clientVersion = kDefaultClientVersion;
+  self.userAgent = kDefaultUserAgent;
 
   // default cache
   userCache := NewMemoryCache();
   statusCache := NewMemoryCache();
   self.cacheBackend = NewCacheBackend(userCache, statusCache, kExpireTime);
+}
+
+func (self *Api) SetUserAgent(agent string) {
+  self.userAgent = agent;
 }
 
 // Sets the username and password string for all subsequent authorized
@@ -519,8 +526,8 @@ func (self *Api) goPostUpdate(status string, inReplyToId int64,
     data += reply_data;
   }
 
-  _, err := httpPost(url, self.user, self.pass,
-                     self.client, self.clientURL, self.clientVersion, data);
+  _, err := httpPost(url, self.user, self.pass, self.client, self.clientURL,
+                     self.clientVersion, self.userAgent, data);
   if err != nil {
     self.reportError(kErr + err.String());
     response <- false;
