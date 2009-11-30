@@ -466,6 +466,7 @@ func (self *Api) init() {
   self.cacheBackend = NewCacheBackend(userCache, statusCache, kExpireTime);
 }
 
+// Overrides the default user agent (go-twitter)
 func (self *Api) SetUserAgent(agent string) {
   self.userAgent = agent;
 }
