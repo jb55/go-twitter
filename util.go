@@ -16,7 +16,7 @@
 package twitter
 
 import (
-  "io";
+  "io/ioutil";
   "os";
   "http";
   "fmt";
@@ -28,7 +28,7 @@ func fixBrokenJson(j string) string {
 
 func parseResponse(response *http.Response) (string, os.Error) {
   var b []byte;
-  b, _ = io.ReadAll(response.Body);
+  b, _ = ioutil.ReadAll(response.Body);
   response.Body.Close();
   bStr := string(b);
 
