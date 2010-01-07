@@ -16,145 +16,131 @@
 package twitter
 
 type User interface {
-  GetId() int64;
-  GetName() string;
-  GetScreenName() string;
-  GetLocation() string;
-  GetDescription() string;
-  GetProfileImageUrl() string;
-  GetProfileBackgroundTitle() bool;
-  GetProfileBackgroundImageUrl() string;
-  GetProfileSidebarFillColor() string;
-  GetProfileLinkColor() string;
-  GetProfileTextColor() string;
-  GetProtected() bool;
-  GetUtcOffset() int;
-  GetTimeZone() string;
-  GetURL() string;
-  GetStatus() Status;
-  setStatus(status Status);
-  GetStatusesCount() int;
-  GetFollowersCount() int;
-  GetFriendsCount() int;
-  GetFavoritesCount() int;
+  GetId() int64
+  GetName() string
+  GetScreenName() string
+  GetLocation() string
+  GetDescription() string
+  GetProfileImageUrl() string
+  GetProfileBackgroundTitle() bool
+  GetProfileBackgroundImageUrl() string
+  GetProfileSidebarFillColor() string
+  GetProfileLinkColor() string
+  GetProfileTextColor() string
+  GetProtected() bool
+  GetUtcOffset() int
+  GetTimeZone() string
+  GetURL() string
+  GetStatus() Status
+  setStatus(status Status)
+  GetStatusesCount() int
+  GetFollowersCount() int
+  GetFriendsCount() int
+  GetFavoritesCount() int
 }
 
 type tTwitterUser struct {
-  Id int64;
-  Name string;
-  Screen_name string;
-  Location string;
-  Description string;
-  Profile_image_url string;
-  Profile_background_title bool;
-  Profile_background_image_url string;
-  Profile_sidebar_fill_color string;
-  Profile_link_color string;
-  Profile_text_color string;
-  Protected bool;
-  Utc_offset int;
-  Url string;
-  Timezone string;
-  Status *tTwitterStatus;
-  Statuses_count int;
-  Followers_count int;
-  Friends_count int;
-  Favorites_count int;
-  Error string;
+  Id                           int64
+  Name                         string
+  Screen_name                  string
+  Location                     string
+  Description                  string
+  Profile_image_url            string
+  Profile_background_title     bool
+  Profile_background_image_url string
+  Profile_sidebar_fill_color   string
+  Profile_link_color           string
+  Profile_text_color           string
+  Protected                    bool
+  Utc_offset                   int
+  Url                          string
+  Timezone                     string
+  Status                       *tTwitterStatus
+  Statuses_count               int
+  Followers_count              int
+  Friends_count                int
+  Favorites_count              int
+  Error                        string
 }
 
-func newEmptyTwitterUser() *tTwitterUser {
-  return new(tTwitterUser);
-}
+func newEmptyTwitterUser() *tTwitterUser { return new(tTwitterUser) }
 
-func (self *tTwitterUser) GetError() string {
-  return self.Error;
-}
+func (self *tTwitterUser) GetError() string { return self.Error }
 
-func (self *tTwitterUser) GetId() int64 {
-  return self.Id;
-}
+func (self *tTwitterUser) GetId() int64 { return self.Id }
 
-func (self *tTwitterUser) GetName() string {
-  return self.Name;
-}
+func (self *tTwitterUser) GetName() string { return self.Name }
 
 func (self *tTwitterUser) GetScreenName() string {
-  return self.Screen_name;
+  return self.Screen_name
 }
 
 func (self *tTwitterUser) GetLocation() string {
-  return self.Location;
+  return self.Location
 }
 
 func (self *tTwitterUser) GetDescription() string {
-  return self.Description;
+  return self.Description
 }
 
 func (self *tTwitterUser) GetProfileImageUrl() string {
-  return self.Profile_image_url;
+  return self.Profile_image_url
 }
 
 func (self *tTwitterUser) GetProfileBackgroundTitle() bool {
-  return self.Profile_background_title;
+  return self.Profile_background_title
 }
 
 func (self *tTwitterUser) GetProfileSidebarFillColor() string {
-  return self.Profile_sidebar_fill_color;
+  return self.Profile_sidebar_fill_color
 }
 
 func (self *tTwitterUser) GetProfileBackgroundImageUrl() string {
-  return self.Profile_background_image_url;
+  return self.Profile_background_image_url
 }
 
 func (self *tTwitterUser) GetProfileLinkColor() string {
-  return self.Profile_link_color;
+  return self.Profile_link_color
 }
 
 func (self *tTwitterUser) GetProfileTextColor() string {
-  return self.Profile_text_color;
+  return self.Profile_text_color
 }
 
-func (self *tTwitterUser) GetProtected() bool {
-  return self.Protected;
-}
+func (self *tTwitterUser) GetProtected() bool { return self.Protected }
 
-func (self *tTwitterUser) GetUtcOffset() int {
-  return self.Utc_offset;
-}
+func (self *tTwitterUser) GetUtcOffset() int { return self.Utc_offset }
 
 func (self *tTwitterUser) GetTimeZone() string {
-  return self.Timezone;
+  return self.Timezone
 }
 
-func (self *tTwitterUser) GetURL() string {
-  return self.Url;
-}
+func (self *tTwitterUser) GetURL() string { return self.Url }
 
 func (self *tTwitterUser) GetStatus() Status {
   if self.Status == nil {
-    self.Status = newEmptyTwitterStatus();
+    self.Status = newEmptyTwitterStatus()
   }
-  self.Status.setUser(self);
-  return self.Status;
+  self.Status.setUser(self)
+  return self.Status
 }
 
 func (self *tTwitterUser) setStatus(status Status) {
-  self.Status = status.(*tTwitterStatus);
+  self.Status = status.(*tTwitterStatus)
 }
 
 func (self *tTwitterUser) GetStatusesCount() int {
-  return self.Statuses_count;
+  return self.Statuses_count
 }
 
 func (self *tTwitterUser) GetFollowersCount() int {
-  return self.Followers_count;
+  return self.Followers_count
 }
 
 func (self *tTwitterUser) GetFriendsCount() int {
-  return self.Friends_count;
+  return self.Friends_count
 }
 
 func (self *tTwitterUser) GetFavoritesCount() int {
-  return self.Favorites_count;
+  return self.Favorites_count
 }

@@ -16,92 +16,82 @@
 package twitter
 
 type Status interface {
-  GetCreatedAt() string;
-  GetCreatedAtInSeconds() int;
-  GetFavorited() bool;
-  GetId() int64;
-  GetText() string;
-  GetInReplyToScreenName() string;
-  GetInReplyToStatusId() int64;
-  GetInReplyToUserId() int64;
-  GetNow() int;
-  GetUser() User;
-  setUser(user User);
+  GetCreatedAt() string
+  GetCreatedAtInSeconds() int
+  GetFavorited() bool
+  GetId() int64
+  GetText() string
+  GetInReplyToScreenName() string
+  GetInReplyToStatusId() int64
+  GetInReplyToUserId() int64
+  GetNow() int
+  GetUser() User
+  setUser(user User)
 }
 
 type errorSource interface {
-  GetError() string;
+  GetError() string
 }
 
 // Our internal status struct
 // the naming is odd so that
 // json.Unmarshal can do its thing properly
 type tTwitterStatus struct {
-  Text string;
-  Created_at string;
-  CreatedAtSeconds int;
-  Favorited bool;
-  Id int64;
-  In_reply_to_screen_name string;
-  In_reply_to_status_id int64;
-  In_reply_to_user_id int64;
-  Error string;
-  User *tTwitterUser;
-  now int;
+  Text                    string
+  Created_at              string
+  CreatedAtSeconds        int
+  Favorited               bool
+  Id                      int64
+  In_reply_to_screen_name string
+  In_reply_to_status_id   int64
+  In_reply_to_user_id     int64
+  Error                   string
+  User                    *tTwitterUser
+  now                     int
 }
 
-func newEmptyTwitterStatus() *tTwitterStatus {
-  return new(tTwitterStatus);
-}
+func newEmptyTwitterStatus() *tTwitterStatus { return new(tTwitterStatus) }
 
-func (self *tTwitterStatus) GetError() string {
-  return self.Error;
-}
+func (self *tTwitterStatus) GetError() string { return self.Error }
 
 func (self *tTwitterStatus) GetCreatedAt() string {
-  return self.Created_at;
+  return self.Created_at
 }
 
 func (self *tTwitterStatus) GetUser() User {
   if self.User == nil {
-    self.User = newEmptyTwitterUser();
+    self.User = newEmptyTwitterUser()
   }
-  self.User.setStatus(self);
-  return self.User;
+  self.User.setStatus(self)
+  return self.User
 }
 
 func (self *tTwitterStatus) setUser(user User) {
-  self.User = user.(*tTwitterUser);
+  self.User = user.(*tTwitterUser)
 }
 
 func (self *tTwitterStatus) GetCreatedAtInSeconds() int {
-  return self.CreatedAtSeconds;
+  return self.CreatedAtSeconds
 }
 
 func (self *tTwitterStatus) GetFavorited() bool {
-  return self.Favorited;
+  return self.Favorited
 }
 
-func (self *tTwitterStatus) GetId() int64 {
-  return self.Id;
-}
+func (self *tTwitterStatus) GetId() int64 { return self.Id }
 
 func (self *tTwitterStatus) GetInReplyToScreenName() string {
-  return self.In_reply_to_screen_name;
+  return self.In_reply_to_screen_name
 }
 
-func (self *tTwitterStatus) GetText() string {
-  return self.Text;
-}
+func (self *tTwitterStatus) GetText() string { return self.Text }
 
 func (self *tTwitterStatus) GetInReplyToStatusId() int64 {
-  return self.In_reply_to_status_id;
+  return self.In_reply_to_status_id
 }
 
 func (self *tTwitterStatus) GetInReplyToUserId() int64 {
-  return self.In_reply_to_user_id;
+  return self.In_reply_to_user_id
 }
 
-func (self *tTwitterStatus) GetNow() int {
-  return self.now;
-}
+func (self *tTwitterStatus) GetNow() int { return self.now }

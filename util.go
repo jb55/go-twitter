@@ -16,39 +16,37 @@
 package twitter
 
 import (
-  "io/ioutil";
-  "os";
-  "http";
-  "fmt";
+  "io/ioutil"
+  "os"
+  "http"
+  "fmt"
 )
 
-func fixBrokenJson(j string) string {
-  return `{"object":` + j + "}";
-}
+func fixBrokenJson(j string) string { return `{"object":` + j + "}" }
 
 func parseResponse(response *http.Response) (string, os.Error) {
-  var b []byte;
-  b, _ = ioutil.ReadAll(response.Body);
-  response.Body.Close();
-  bStr := string(b);
+  var b []byte
+  b, _ = ioutil.ReadAll(response.Body)
+  response.Body.Close()
+  bStr := string(b)
 
-  return bStr, nil;
+  return bStr, nil
 }
 
-func addQueryVariables(url string, variables map[string] string) string {
-  var addition string;
-  newUrl := url;
+func addQueryVariables(url string, variables map[string]string) string {
+  var addition string
+  newUrl := url
 
-  i := 0;
+  i := 0
   for key, value := range variables {
     if i == 0 {
-      addition = fmt.Sprintf("?%s=%s", key, http.URLEscape(value));
+      addition = fmt.Sprintf("?%s=%s", key, http.URLEscape(value))
     } else {
-      addition = fmt.Sprintf("&%s=%s", key, http.URLEscape(value));
+      addition = fmt.Sprintf("&%s=%s", key, http.URLEscape(value))
     }
-    newUrl += addition;
-    i++;
+    newUrl += addition
+    i++
   }
 
-  return newUrl;
+  return newUrl
 }

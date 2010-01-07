@@ -16,23 +16,23 @@
 package twitter
 
 type tTwitterStatusDummy struct {
-  Object tTwitterStatus;
+  Object tTwitterStatus
 }
 
 type tTwitterTimelineDummy struct {
-  Object []tTwitterStatus;
+  Object []tTwitterStatus
 }
 
 type tTwitterUserListDummy struct {
-  Object []tTwitterUser;
+  Object []tTwitterUser
 }
 
 type tTwitterUserDummy struct {
-  Object tTwitterUser;
+  Object tTwitterUser
 }
 
 type tTwitterSearchDummy struct {
-  Object tTwitterSearch;
+  Object tTwitterSearch
 }
 
 // I should probably put http_auth.go in here as well
