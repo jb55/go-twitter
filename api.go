@@ -131,8 +131,8 @@ func (self *Api) GetFriends(user interface{}, page int) <-chan []User {
   return self.getUsersByType(user, page, "statuses/friends");
 }
 
-func (self *Api) getUsersByType(user interface{}, page int, typ string)
-                               (<-chan []User) {
+func (self *Api) getUsersByType(user interface{}, page int,
+                                typ string) (<-chan []User) {
   var url string;
   var ok bool;
   responseChannel := self.buildRespChannel(_SLICEUSER).(chan []User);
@@ -175,8 +175,7 @@ func (self *Api) SearchSimple(query string) <-chan []SearchResult {
 //  Restricts tweets to the given language, given by an ISO 639-1 code.
 //  Set to an empty string to use the default value.
 func (self *Api) Search(query string, page int, perPage int,
-                        sinceId int, locale string, lang string)
-                       (<-chan []SearchResult) {
+            sinceId int, locale string, lang string) (<-chan []SearchResult) {
   variables := make(map[string] string);
   url := _QUERY_SEARCH;
   responseChannel := self.buildRespChannel(_SLICESEARCH).(chan []SearchResult);
@@ -636,8 +635,8 @@ func (self *Api) getJsonFromUrl(url string) string {
   return data;
 }
 
-func (self *Api) buildUserUrl(typ string, user interface{}, page int)
-                             (string, bool) {
+func (self *Api) buildUserUrl(typ string, user interface{},
+                              page int) (string, bool) {
   var url string;
 
   if user == nil {

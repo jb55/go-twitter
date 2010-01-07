@@ -123,8 +123,8 @@ func (self *CacheBackend) HasStatusExpired(id int64) bool {
 }
 
 // Creates a custom cache backend
-func NewCacheBackend(user Cache, status Cache, expireTime int64)
-                    (*CacheBackend) {
+func NewCacheBackend(user Cache, status Cache,
+                     expireTime int64) (*CacheBackend) {
   backend := new(CacheBackend);
 
   backend.hit = 0;

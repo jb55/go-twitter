@@ -114,9 +114,9 @@ func authGet(url, user, pwd string) (r *http.Response, err os.Error) {
 // Post issues a POST to the specified URL.
 //
 // Caller should close r.Body when done reading it.
-func authPost(url, user, pwd, client, clientURL, version, agent,
-              bodyType string, body io.Reader)
-             (r *http.Response, err os.Error) {
+func authPost(url, user, pwd, client,
+              clientURL, version, agent, bodyType string,
+              body io.Reader) (r *http.Response, err os.Error) {
   var req http.Request;
   req.Method = "POST";
   req.Body = body;
@@ -156,9 +156,8 @@ func httpGet(url, user, pass string) (*http.Response, string, os.Error) {
 
 // Do an authenticated Post if we've called Authenticated, otherwise
 // just Post it without authentication
-func httpPost(url, user, pass, client,
-              clientURL, version, agent, data string)
-             (*http.Response, os.Error) {
+func httpPost(url, user, pass, client, clientURL, version, agent,
+              data string) (*http.Response, os.Error) {
   var r *http.Response;
   var err os.Error;
 
