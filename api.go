@@ -69,7 +69,6 @@ type Api struct {
   clientURL      string
   clientVersion  string
   userAgent      string
-  cacheBackend   *CacheBackend
   receiveChannel interface{}
 }
 
@@ -95,10 +94,6 @@ func (self *Api) GetLastError() os.Error {
   last := self.lastError
   self.lastError = nil
   return last
-}
-
-func (self *Api) SetCache(backend *CacheBackend) {
-  self.cacheBackend = backend
 }
 
 // Gets the followers for a given user represented by a slice
@@ -475,11 +470,6 @@ func (self *Api) init() {
   self.clientURL = kDefaultClientURL
   self.clientVersion = kDefaultClientVersion
   self.userAgent = kDefaultUserAgent
-
-  // default cache
-  userCache := NewMemoryCache()
-  statusCache := NewMemoryCache()
-  self.cacheBackend = NewCacheBackend(userCache, statusCache, kExpireTime)
 }
 
 // Overrides the default user agent (go-twitter)
@@ -560,30 +550,8 @@ func (self *Api) goPostUpdate(status string, inReplyToId int64, response chan bo
 func (self *Api) GetStatus(id int64) <-chan Status {
   responseChannel := self.buildRespChannel(_STATUS).(chan Status)
 
-  // grab from cache if we have it
-  if cached, hasCached := self.getCachedStatus(id); hasCached {
-    responseChannel <- cached
-    return responseChannel
-  }
-
   go self.goGetStatus(id, responseChannel)
   return responseChannel
-}
-
-func (self *Api) getCachedStatus(id int64) (Status, bool) {
-  if self.cacheBackend.HasStatusExpired(id) {
-    return nil, false
-  }
-
-  return self.cacheBackend.GetStatus(id), true
-}
-
-func (self *Api) getCachedUser(id int64) (User, bool) {
-  if self.cacheBackend.HasUserExpired(id) {
-    return nil, false
-  }
-
-  return self.cacheBackend.GetUser(id), true
 }
 
 func (self *Api) SetReceiveChannel(receiveChannel interface{}) {

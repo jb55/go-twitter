@@ -22,11 +22,8 @@ import "fmt"
 // dont change this
 const kId = 5641609144
 
-var cache *CacheBackend
-
 func TestValidStatus(t *testing.T) {
   api := NewApi()
-  cache = api.cacheBackend
   errors := api.GetErrorChannel()
 
   fmt.Printf("<-api.GetStatus() ...\n")
@@ -39,62 +36,18 @@ func TestValidStatus(t *testing.T) {
 
 func TestValidUser(t *testing.T) {
   api := NewApi()
-  api.SetCache(cache)
   errors := api.GetErrorChannel()
 
   fmt.Printf("<-api.GetUserById() ...\n")
-
-  // this should be cached from our first test
-  // kId is a status id from my twitter account,
-  // and it should have grabbed my user info
-  // when it grabbed the status
-  hitBefore := cache.hit
   user := <-api.GetUserById(9918032)
-  hitAfter := cache.hit
-
-  if hitBefore == hitAfter {
-    t.Error("Cache was not hit on user lookup, expected: cache lookup")
-  }
 
   verifyValidUser(user, t)
   verifyValidStatus(user.GetStatus(), t)
   getAllApiErrors(errors, t)
 }
 
-func TestCacheStoredNotZero(t *testing.T) {
-  api := NewApi()
-  api.SetCache(cache)
-  errors := api.GetErrorChannel()
-
-  stored := cache.store
-  assertGreaterThanZero(stored, "Cache.Store", t)
-
-  getAllApiErrors(errors, t)
-}
-
-func TestCacheGet(t *testing.T) {
-  api := NewApi()
-  api.SetCache(cache)
-  errors := api.GetErrorChannel()
-  var last, current Status
-  last = nil
-
-  for i := 0; i < 5; i++ {
-    current = <-api.GetStatus(kId)
-    if current != last && i != 0 {
-      t.Errorf("Cache not storing Status data")
-    }
-    last = current
-  }
-
-  assertGreaterThanZero(cache.hit, "Cache.Hit", t)
-
-  getAllApiErrors(errors, t)
-}
-
 func TestValidFollowerList(t *testing.T) {
   api := NewApi()
-  api.SetCache(cache)
   errors := api.GetErrorChannel()
   fmt.Printf("<-api.GetFollowers() ...\n")
   users := <-api.GetFollowers("jb55", 0)
@@ -116,7 +69,6 @@ func TestValidFollowerList(t *testing.T) {
 
 func TestValidFriendsList(t *testing.T) {
   api := NewApi()
-  api.SetCache(cache)
   errors := api.GetErrorChannel()
   fmt.Printf("<-api.GetFriends() ...\n")
   users := <-api.GetFriends("jb55", 0)
@@ -138,7 +90,6 @@ func TestValidFriendsList(t *testing.T) {
 
 func TestValidSearchResults(t *testing.T) {
   api := NewApi()
-  api.SetCache(cache)
   errors := api.GetErrorChannel()
   fmt.Printf("<-api.SearchSimple() ...\n")
   results := <-api.SearchSimple("#ff")
@@ -157,7 +108,6 @@ func TestValidSearchResults(t *testing.T) {
 
 func TestValidPublicTimeLine(t *testing.T) {
   api := NewApi()
-  api.SetCache(cache)
   errors := api.GetErrorChannel()
   fmt.Printf("<-api.GetPublicTimeline() ...\n")
   statuses := <-api.GetPublicTimeline()
