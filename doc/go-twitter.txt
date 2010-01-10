@@ -86,6 +86,9 @@ unless another error has occured.
 func (self *Api) GetPublicTimeline() <-chan []Status
 Retrieves the public timeline as a slice of Status objects
 
+func (self *Api) GetRateLimitInfo() <-chan RateLimit
+Returns rate limiting information
+
 func (self *Api) GetReplies() <-chan []Status
 Returns the 20 most recent mentions for the authenticated user
 Returns the statuses as a slice of Status objects
@@ -184,16 +187,16 @@ version:
 type Cache interface {
     // Stores a value in the database, the key is determined
     // by the GetId() function in the IdProvider interface
-    Store(data IdProvider);
+    Store(data IdProvider)
 
     // Checks to see if the cache contains a given key
-    HasId(id int64) bool;
+    HasId(id int64) bool
 
     // Gets a value from the cache
-    Get(id int64) IdProvider;
+    Get(id int64) IdProvider
 
     // Gets the time a given key was stored
-    GetTimeStored(id int64) int64;
+    GetTimeStored(id int64) int64
 }
 
 type CacheBackend struct {
@@ -216,7 +219,7 @@ func (self *CacheBackend) StoreStatus(status Status)
 func (self *CacheBackend) StoreUser(user User)
 
 type IdProvider interface {
-    GetId() int64;
+    GetId() int64
 }
 
 type MemoryCache struct {
@@ -233,29 +236,36 @@ func (self *MemoryCache) HasId(id int64) bool
 
 func (self *MemoryCache) Store(data IdProvider)
 
+type RateLimit interface {
+    GetRemainingHits() int
+    GetHourlyLimit() int
+    GetResetTimeInSeconds() int64
+    GetResetTime() string
+}
+
 type SearchResult interface {
-    GetCreatedAt() string;
-    GetFromUser() string;
-    GetToUserId() int64;
-    GetText() string;
-    GetId() int64;
-    GetFromUserId() int64;
-    GetGeo() string;
-    GetIsoLanguageCode() string;
-    GetSource() string;
+    GetCreatedAt() string
+    GetFromUser() string
+    GetToUserId() int64
+    GetText() string
+    GetId() int64
+    GetFromUserId() int64
+    GetGeo() string
+    GetIsoLanguageCode() string
+    GetSource() string
 }
 
 type Status interface {
-    GetCreatedAt() string;
-    GetCreatedAtInSeconds() int;
-    GetFavorited() bool;
-    GetId() int64;
-    GetText() string;
-    GetInReplyToScreenName() string;
-    GetInReplyToStatusId() int64;
-    GetInReplyToUserId() int64;
-    GetNow() int;
-    GetUser() User;
+    GetCreatedAt() string
+    GetCreatedAtInSeconds() int
+    GetFavorited() bool
+    GetId() int64
+    GetText() string
+    GetInReplyToScreenName() string
+    GetInReplyToStatusId() int64
+    GetInReplyToUserId() int64
+    GetNow() int
+    GetUser() User
     // contains unexported methods
 }
 
@@ -267,27 +277,27 @@ func (self TwitterError) String() string
 type that satisfies the os.Error interface
 
 type User interface {
-    GetId() int64;
-    GetName() string;
-    GetScreenName() string;
-    GetLocation() string;
-    GetDescription() string;
-    GetProfileImageUrl() string;
-    GetProfileBackgroundTitle() bool;
-    GetProfileBackgroundImageUrl() string;
-    GetProfileSidebarFillColor() string;
-    GetProfileLinkColor() string;
-    GetProfileTextColor() string;
-    GetProtected() bool;
-    GetUtcOffset() int;
-    GetTimeZone() string;
-    GetURL() string;
-    GetStatus() Status;
+    GetId() int64
+    GetName() string
+    GetScreenName() string
+    GetLocation() string
+    GetDescription() string
+    GetProfileImageUrl() string
+    GetProfileBackgroundTitle() bool
+    GetProfileBackgroundImageUrl() string
+    GetProfileSidebarFillColor() string
+    GetProfileLinkColor() string
+    GetProfileTextColor() string
+    GetProtected() bool
+    GetUtcOffset() int
+    GetTimeZone() string
+    GetURL() string
+    GetStatus() Status
 
-    GetStatusesCount() int;
-    GetFollowersCount() int;
-    GetFriendsCount() int;
-    GetFavoritesCount() int;
+    GetStatusesCount() int
+    GetFollowersCount() int
+    GetFriendsCount() int
+    GetFavoritesCount() int
     // contains unexported methods
 }
 
