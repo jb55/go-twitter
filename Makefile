@@ -10,6 +10,7 @@ GOFILES=\
 	cache.go\
 	search.go\
 	util.go\
+	rate_limit.go\
 	http_auth.go
 
 include $(GOROOT)/src/Make.pkg

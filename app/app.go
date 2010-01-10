@@ -20,27 +20,20 @@ import "fmt"
 
 func main() {
   const nIds = 10;
-  var startId int64 = 5641609144;
 
   api := twitter.NewApi();
   errors := api.GetErrorChannel();
-  receiveChannel := make(chan twitter.Status, nIds);
-  api.SetReceiveChannel(receiveChannel);
 
-  for i := 0; i < nIds; i++ {
-    api.GetStatus(startId);
-    startId++;
-  }
+  //showSearch(api, "@jb55")
+  rateLimitInfo := <-api.GetRateLimitInfo()
 
-  for i := 0; i < nIds; i++ {
-    // reads in status messages as they come in
-    status := <-receiveChannel;
-    fmt.Printf("Status #%d %s: %s\n", i,
-                status.GetUser().GetScreenName(),
-                status.GetText());
-  }
+  fmt.Printf("Remaining hits this hour: %d/%d\n",
+    rateLimitInfo.GetRemainingHits(),
+    rateLimitInfo.GetHourlyLimit())
 
-  showSearch(api, "@jb55");
+  fmt.Printf("other: %d, %s\n",
+    rateLimitInfo.GetResetTimeInSeconds(),
+    rateLimitInfo.GetResetTime())
 
   for i := 0; api.HasErrors(); i++ {
     fmt.Printf("Error #%d: %s\n", i, <-errors);

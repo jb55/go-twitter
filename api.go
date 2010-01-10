@@ -42,6 +42,7 @@ const (
   _QUERY_USER_ID         = "http://www.twitter.com/%s.json?user_id=%d"
   _QUERY_USER_DEFAULT    = "http://www.twitter.com/%s.json"
   _QUERY_SEARCH          = "http://search.twitter.com/search.json"
+  _QUERY_RATELIMIT       = "http://twitter.com/account/rate_limit_status.json"
 )
 
 const (
@@ -52,6 +53,7 @@ const (
   _SLICEUSER
   _BOOL
   _ERROR
+  _RATELIMIT
 )
 
 type TwitterError struct {
@@ -275,6 +277,13 @@ func (self *Api) GetReplies() <-chan []Status {
   return responseChannel
 }
 
+// Returns rate limiting information
+func (self *Api) GetRateLimitInfo() <-chan RateLimit {
+  responseChannel := self.buildRespChannel(_RATELIMIT).(chan RateLimit)
+  go self.goGetRateLimit(_QUERY_RATELIMIT, responseChannel)
+  return responseChannel
+}
+
 // Set the X-Twitter HTTP headers that will be sent to the server.
 //
 // client:
@@ -321,6 +330,11 @@ func (self *Api) buildRespChannel(channelType int) interface{} {
         return self.receiveChannel
       }
       break
+    case _RATELIMIT:
+      if _, ok := self.receiveChannel.(chan RateLimit); ok {
+        return self.receiveChannel
+      }
+      break
     case _SLICEUSER:
       if _, ok := self.receiveChannel.(chan []User); ok {
         return self.receiveChannel
@@ -347,6 +361,8 @@ func (self *Api) buildRespChannel(channelType int) interface{} {
     return make(chan []SearchResult, size)
   case _USER:
     return make(chan User, size)
+  case _RATELIMIT:
+    return make(chan RateLimit, size)
   case _SLICEUSER:
     return make(chan []User, size)
   case _BOOL:
@@ -365,6 +381,16 @@ func (self *Api) goGetStatuses(url string, responseChannel chan []Status) {
 
 func (self *Api) goGetUsers(url string, responseChannel chan []User) {
   responseChannel <- self.getUsers(url)
+}
+
+func (self *Api) goGetRateLimit(url string, responseChannel chan RateLimit) {
+  var rateLimitDummy tTwitterRateLimitDummy
+  jsonString := self.getJsonFromUrl(url)
+  json.Unmarshal(jsonString, &rateLimitDummy)
+
+  rateLimit := &(rateLimitDummy.Object)
+
+  responseChannel <- rateLimit
 }
 
 func (self *Api) goGetSearchResults(url string, responseChannel chan []SearchResult) {
