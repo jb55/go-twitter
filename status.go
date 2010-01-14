@@ -15,8 +15,6 @@
 //
 package twitter
 
-import "time"
-
 type Status interface {
   GetCreatedAt() string
   GetCreatedAtInSeconds() int64
@@ -49,7 +47,7 @@ type tTwitterStatus struct {
   Error                   string
   User                    *tTwitterUser
   now                     int
-  createdAtTime           *time.Time
+  createdAtSeconds        int64
 }
 
 func newEmptyTwitterStatus() *tTwitterStatus { return new(tTwitterStatus) }
@@ -73,10 +71,10 @@ func (self *tTwitterStatus) setUser(user User) {
 }
 
 func (self *tTwitterStatus) GetCreatedAtInSeconds() int64 {
-  if self.createdAtTime == nil {
-    self.createdAtTime = parseTwitterDate(self.Created_at)
+  if self.createdAtSeconds == 0 {
+    self.createdAtSeconds = parseTwitterDate(self.Created_at).Seconds()
   }
-  return self.createdAtTime.Seconds()
+  return self.createdAtSeconds;
 }
 
 func (self *tTwitterStatus) GetFavorited() bool {

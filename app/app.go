@@ -39,6 +39,9 @@ func main() {
     fmt.Printf("Error #%d: %s\n", i, <-errors);
   }
 
+  status := <-api.GetStatus(7696223837);
+  fmt.Printf("status created at seconds: %d\n", status.GetCreatedAtInSeconds());
+
   //api.PostUpdate("Testing my Go twitter library", 0);
 }
 
