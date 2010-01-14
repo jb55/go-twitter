@@ -21,6 +21,8 @@ import (
   "os"
   "json"
   "strconv"
+  "time"
+  "regexp"
 )
 
 const (
@@ -429,6 +431,24 @@ func (self *Api) getStatuses(url string) []Status {
   }
 
   return timeline
+}
+
+func parseTwitterDate(date string) *time.Time {
+  r, err := regexp.Compile("\\+0000")
+
+  if err != nil {
+    fmt.Fprintf(os.Stderr, err.String() + "\n")
+  }
+
+  newStr := r.ReplaceAllString(date, "-0000")
+  parsedTime, err := time.Parse(time.RubyDate, newStr)
+
+  if err != nil {
+    fmt.Fprintf(os.Stderr, err.String() + "\n")
+    return time.LocalTime()
+  }
+
+  return parsedTime
 }
 
 

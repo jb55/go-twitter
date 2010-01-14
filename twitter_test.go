@@ -145,7 +145,7 @@ func verifyValidUser(u User, t *testing.T) {
 
 func verifyValidStatus(s Status, t *testing.T) {
   assertGreaterThanZero(s.GetId(), "GetId", t)
-  assertNotEmpty(s.GetCreatedAt(), "GetCreatedAt", t)
+  assertGreaterThanZero(s.GetCreatedAtInSeconds(), "GetCreatedAtInSeconds", t)
   assertNotEmpty(s.GetText(), "GetText", t)
   assertNotNil(s.GetUser(), "GetUser", t)
 }
