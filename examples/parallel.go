@@ -4,12 +4,8 @@ import "twitter"
 import "flag"
 import "fmt"
 
-const kStart = "jb55"
-
-var api *twitter.Api
-
 func main() {
-  api = twitter.NewApi()
+  api := twitter.NewApi()
   isParallel := flag.Bool("p", false, "parallel downloads with go channels")
   flag.Parse()
 
