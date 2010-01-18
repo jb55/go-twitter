@@ -1,0 +1,11 @@
+Not Parallel... (-p for parallel)
+
+real    0m4.317s
+user    0m0.070s
+sys     0m0.010s
+
+Parallel...
+
+real    0m1.511s
+user    0m0.040s
+sys     0m0.000s
