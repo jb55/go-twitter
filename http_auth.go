@@ -65,7 +65,7 @@ func send(req *http.Request) (resp *http.Response, err os.Error) {
   }
 
   reader := bufio.NewReader(conn)
-  resp, err = http.ReadResponse(reader)
+  resp, err = http.ReadResponse(reader, req.Method)
   if err != nil {
     conn.Close()
     return nil, err
