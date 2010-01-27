@@ -22,7 +22,9 @@ import (
   "fmt"
 )
 
-func fixBrokenJson(j string) string { return `{"object":` + j + "}" }
+func fixBrokenXml(j string) string {
+  return "<object>" + j + "</object>"
+}
 
 func parseResponse(response *http.Response) (string, os.Error) {
   var b []byte

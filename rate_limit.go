@@ -1,5 +1,7 @@
 package twitter
 
+import "xml"
+
 type RateLimit interface {
   GetRemainingHits() int
   GetHourlyLimit() int
@@ -8,6 +10,7 @@ type RateLimit interface {
 }
 
 type tTwitterRateLimit struct {
+  XMLName xml.Name "hash"
   Remaining_hits int
   Hourly_limit int
   Reset_time_in_seconds int64

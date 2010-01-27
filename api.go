@@ -19,10 +19,10 @@ import (
   "http"
   "fmt"
   "os"
-  "json"
+  "io"
+  "xml"
   "strconv"
   "time"
-  "regexp"
 )
 
 const (
@@ -34,17 +34,17 @@ const (
   kWarn                 = "GoTwitter Warning: "
   kDefaultTimelineAlloc = 20
 
-  _QUERY_GETSTATUS       = "http://www.twitter.com/statuses/show/%d.json"
-  _QUERY_UPDATESTATUS    = "http://www.twitter.com/statuses/update/update.json"
-  _QUERY_PUBLICTIMELINE  = "http://www.twitter.com/statuses/public_timeline.json"
-  _QUERY_USERTIMELINE    = "http://www.twitter.com/statuses/user_timeline.json"
-  _QUERY_REPLIES         = "http://www.twitter.com/statuses/mentions.json"
-  _QUERY_FRIENDSTIMELINE = "http://www.twitter.com/statuses/friends_timeline.json"
-  _QUERY_USER_NAME       = "http://www.twitter.com/%s.json?screen_name=%s"
-  _QUERY_USER_ID         = "http://www.twitter.com/%s.json?user_id=%d"
-  _QUERY_USER_DEFAULT    = "http://www.twitter.com/%s.json"
-  _QUERY_SEARCH          = "http://search.twitter.com/search.json"
-  _QUERY_RATELIMIT       = "http://twitter.com/account/rate_limit_status.json"
+  _QUERY_GETSTATUS       = "http://www.twitter.com/statuses/show/%d.xml"
+  _QUERY_UPDATESTATUS    = "http://www.twitter.com/statuses/update/update.xml"
+  _QUERY_PUBLICTIMELINE  = "http://www.twitter.com/statuses/public_timeline.xml"
+  _QUERY_USERTIMELINE    = "http://www.twitter.com/statuses/user_timeline.xml"
+  _QUERY_REPLIES         = "http://www.twitter.com/statuses/mentions.xml"
+  _QUERY_FRIENDSTIMELINE = "http://www.twitter.com/statuses/friends_timeline.xml"
+  _QUERY_USER_NAME       = "http://www.twitter.com/%s.xml?screen_name=%s"
+  _QUERY_USER_ID         = "http://www.twitter.com/%s.xml?user_id=%d"
+  _QUERY_USER_DEFAULT    = "http://www.twitter.com/%s.xml"
+  _QUERY_SEARCH          = "http://search.twitter.com/search.xml"
+  _QUERY_RATELIMIT       = "http://twitter.com/account/rate_limit_status.xml"
 )
 
 const (
@@ -381,21 +381,19 @@ func (self *Api) goGetUsers(url string, responseChannel chan []User) {
 }
 
 func (self *Api) goGetRateLimit(url string, responseChannel chan RateLimit) {
-  var rateLimitDummy tTwitterRateLimitDummy
-  jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &rateLimitDummy)
+  var rateLimit tTwitterRateLimit
+  xmlBuffer := self.getXmlFromUrl(url)
+  xml.Unmarshal(xmlBuffer, &rateLimit)
 
-  rateLimit := &(rateLimitDummy.Object)
-
-  responseChannel <- rateLimit
+  responseChannel <- &rateLimit
 }
 
 func (self *Api) goGetSearchResults(url string, responseChannel chan []SearchResult) {
   var searchDummy tTwitterSearchDummy
   var results []SearchResult
 
-  jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &searchDummy)
+  xmlBuffer := self.getXmlFromUrl(url)
+  xml.Unmarshal(xmlBuffer, &searchDummy)
 
   dummyLen := len(searchDummy.Object.Results)
   results = make([]SearchResult, dummyLen)
@@ -415,14 +413,14 @@ func (self *Api) getStatuses(url string) []Status {
   var timelineDummy tTwitterTimelineDummy
   var timeline []Status
 
-  jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &timelineDummy)
+  xmlBuffer := self.getXmlFromUrl(url)
+  xml.Unmarshal(xmlBuffer, &timelineDummy)
 
-  dummyLen := len(timelineDummy.Object)
+  dummyLen := len(timelineDummy.Status)
   timeline = make([]Status, dummyLen)
 
   for i := 0; i < dummyLen; i++ {
-    status := &timelineDummy.Object[i]
+    status := &timelineDummy.Status[i]
     timeline[i] = status
     if err := status.GetError(); err != "" {
       self.reportError(err)
@@ -434,14 +432,7 @@ func (self *Api) getStatuses(url string) []Status {
 }
 
 func parseTwitterDate(date string) *time.Time {
-  r, err := regexp.Compile("\\+0000")
-
-  if err != nil {
-    fmt.Fprintf(os.Stderr, err.String() + "\n")
-  }
-
-  newStr := r.ReplaceAllString(date, "-0000")
-  parsedTime, err := time.Parse(time.RubyDate, newStr)
+  parsedTime, err := time.Parse(time.RubyDate, date)
 
   if err != nil {
     fmt.Fprintf(os.Stderr, err.String() + "\n")
@@ -459,8 +450,8 @@ func (self *Api) getUsers(url string) []User {
   var usersDummy tTwitterUserListDummy
   var users []User
 
-  jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &usersDummy)
+  xmlBuffer := self.getXmlFromUrl(url)
+  xml.Unmarshal(xmlBuffer, &usersDummy)
 
   dummyLen := len(usersDummy.Object)
   users = make([]User, dummyLen)
@@ -580,8 +571,8 @@ func (self *Api) SetReceiveChannel(receiveChannel interface{}) {
 
 func (self *Api) goGetUser(url string, response chan User) {
   var user tTwitterUserDummy
-  jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &user)
+  xmlBuffer := self.getXmlFromUrl(url)
+  xml.Unmarshal(xmlBuffer, &user)
 
   u := &(user.Object)
   if err := u.GetError(); err != "" {
@@ -594,8 +585,8 @@ func (self *Api) goGetUser(url string, response chan User) {
 func (self *Api) goGetStatus(id int64, response chan Status) {
   url := fmt.Sprintf(_QUERY_GETSTATUS, id)
   var status tTwitterStatusDummy
-  jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &status)
+  xmlBuffer := self.getXmlFromUrl(url)
+  xml.Unmarshal(xmlBuffer, &status)
 
   s := &(status.Object)
   if err := s.GetError(); err != "" {
@@ -620,21 +611,14 @@ func (self *Api) reportError(error string) {
   }
 }
 
-func (self *Api) getJsonFromUrl(url string) string {
+func (self *Api) getXmlFromUrl(url string) io.Reader {
   r, _, error := httpGet(url, self.user, self.pass)
   if error != nil {
     self.reportError(kErr + error.String())
-    return ""
+    return nil
   }
 
-  data, err := parseResponse(r)
-  data = fixBrokenJson(data)
-  if err != nil {
-    self.reportError(kErr + err.String())
-    return ""
-  }
-
-  return data
+  return r.Body
 }
 
 func (self *Api) buildUserUrl(typ string, user interface{}, page int) (string, bool) {

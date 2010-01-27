@@ -15,28 +15,4 @@
 //
 package twitter
 
-type tTwitterStatusDummy struct {
-  Object tTwitterStatus
-}
-
-type tTwitterTimelineDummy struct {
-  Object []tTwitterStatus
-}
-
-type tTwitterUserListDummy struct {
-  Object []tTwitterUser
-}
-
-type tTwitterUserDummy struct {
-  Object tTwitterUser
-}
-
-type tTwitterSearchDummy struct {
-  Object tTwitterSearch
-}
-
-type tTwitterRateLimitDummy struct {
-  Object tTwitterRateLimit
-}
-
 // I should probably put http_auth.go in here as well

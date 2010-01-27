@@ -16,6 +16,10 @@ type tTwitterSearch struct {
   Results []tTwitterSearchResult
 }
 
+type tTwitterSearchDummy struct {
+  Object tTwitterSearch
+}
+
 type tTwitterSearchResult struct {
   Profile_image_url string
   Created_at        string

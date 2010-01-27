@@ -15,6 +15,8 @@
 //
 package twitter
 
+import "xml"
+
 type Status interface {
   GetCreatedAt() string
   GetCreatedAtInSeconds() int64
@@ -48,6 +50,16 @@ type tTwitterStatus struct {
   User                    *tTwitterUser
   now                     int
   createdAtSeconds        int64
+}
+
+type tTwitterStatusDummy struct {
+  Object tTwitterStatus
+}
+
+type tTwitterTimelineDummy struct {
+  XMLName xml.Name "statuses"
+  Type string "attr";
+  Status []tTwitterStatus
 }
 
 func newEmptyTwitterStatus() *tTwitterStatus { return new(tTwitterStatus) }

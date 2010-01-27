@@ -63,6 +63,14 @@ type tTwitterUser struct {
   Error                        string
 }
 
+type tTwitterUserListDummy struct {
+  Object []tTwitterUser
+}
+
+type tTwitterUserDummy struct {
+  Object tTwitterUser
+}
+
 func newEmptyTwitterUser() *tTwitterUser { return new(tTwitterUser) }
 
 func (self *tTwitterUser) GetError() string { return self.Error }
