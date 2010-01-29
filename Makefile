@@ -6,7 +6,6 @@ GOFILES=\
 	api.go\
 	status.go\
 	user.go\
-	hacks.go\
 	search.go\
 	util.go\
 	rate_limit.go\

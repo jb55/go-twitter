@@ -14,6 +14,10 @@ type tTwitterRateLimit struct {
   Reset_time string
 }
 
+type tTwitterRateLimitDummy struct {
+  Object tTwitterRateLimit
+}
+
 func (self *tTwitterRateLimit) GetRemainingHits() int {
   return self.Remaining_hits
 }

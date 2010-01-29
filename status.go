@@ -50,6 +50,14 @@ type tTwitterStatus struct {
   createdAtSeconds        int64
 }
 
+type tTwitterStatusDummy struct {
+  Object tTwitterStatus
+}
+
+type tTwitterTimelineDummy struct {
+  Object []tTwitterStatus
+}
+
 func newEmptyTwitterStatus() *tTwitterStatus { return new(tTwitterStatus) }
 
 func (self *tTwitterStatus) GetError() string { return self.Error }

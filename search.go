@@ -30,6 +30,10 @@ type tTwitterSearchResult struct {
   Error             string
 }
 
+type tTwitterSearchDummy struct {
+  Object tTwitterSearch
+}
+
 func (self *tTwitterSearchResult) GetError() string {
   return self.Error
 }
