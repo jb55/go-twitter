@@ -114,7 +114,7 @@ func authPost(url, user, pwd, client,
   clientURL, version, agent, bodyType string, body io.Reader) (r *http.Response, err os.Error) {
   var req http.Request
   req.Method = "POST"
-  req.Body = body
+  req.Body = body.(io.ReadCloser)
   req.Header = map[string]string{
     "Content-Type": bodyType,
     "Transfer-Encoding": "chunked",
