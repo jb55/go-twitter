@@ -87,7 +87,7 @@ func send(req *http.Request) (resp *http.Response, err os.Error) {
 func encodedUsernameAndPassword(user, pwd string) string {
   bb := &bytes.Buffer{}
   encoder := base64.NewEncoder(base64.StdEncoding, bb)
-  encoder.Write(strings.Bytes(user + ":" + pwd))
+  encoder.Write([]byte(user + ":" + pwd))
   encoder.Close()
   return bb.String()
 }
@@ -110,18 +110,18 @@ func authGet(url, user, pwd string) (r *http.Response, err os.Error) {
 // Post issues a POST to the specified URL.
 //
 // Caller should close r.Body when done reading it.
-func authPost(url, user, pwd, client,
-  clientURL, version, agent, bodyType string, body io.Reader) (r *http.Response, err os.Error) {
+func authPost(url, user, pwd, client, clientURL, version, agent, bodyType string,
+              body io.Reader) (r *http.Response, err os.Error) {
   var req http.Request
   req.Method = "POST"
   req.Body = body.(io.ReadCloser)
   req.Header = map[string]string{
-    "Content-Type": bodyType,
-    "Transfer-Encoding": "chunked",
-    "User-Agent": agent,
-    "X-Twitter-Client": client,
+    "Content-Type":         bodyType,
+    "Transfer-Encoding":    "chunked",
+    "User-Agent":           agent,
+    "X-Twitter-Client":     client,
     "X-Twitter-Client-URL": clientURL,
-    "X-Twitter-Version": version,
+    "X-Twitter-Version":    version,
     "Authorization": "Basic " + encodedUsernameAndPassword(user, pwd),
   }
 
@@ -152,7 +152,7 @@ func httpGet(url, user, pass string) (*http.Response, string, os.Error) {
 // Do an authenticated Post if we've called Authenticated, otherwise
 // just Post it without authentication
 func httpPost(url, user, pass, client, clientURL, version, agent,
-  data string) (*http.Response, os.Error) {
+              data string) (*http.Response, os.Error) {
   var r *http.Response
   var err os.Error
 
