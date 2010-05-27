@@ -383,7 +383,7 @@ func (self *Api) goGetUsers(url string, responseChannel chan []User) {
 func (self *Api) goGetRateLimit(url string, responseChannel chan RateLimit) {
   var rateLimitDummy tTwitterRateLimitDummy
   jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &rateLimitDummy)
+  json.Unmarshal([]uint8(jsonString), &rateLimitDummy)
 
   rateLimit := &(rateLimitDummy.Object)
 
@@ -395,7 +395,7 @@ func (self *Api) goGetSearchResults(url string, responseChannel chan []SearchRes
   var results []SearchResult
 
   jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &searchDummy)
+  json.Unmarshal([]uint8(jsonString), &searchDummy)
 
   dummyLen := len(searchDummy.Object.Results)
   results = make([]SearchResult, dummyLen)
@@ -416,7 +416,7 @@ func (self *Api) getStatuses(url string) []Status {
   var timeline []Status
 
   jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &timelineDummy)
+  json.Unmarshal([]uint8(jsonString), &timelineDummy)
 
   dummyLen := len(timelineDummy.Object)
   timeline = make([]Status, dummyLen)
@@ -460,7 +460,7 @@ func (self *Api) getUsers(url string) []User {
   var users []User
 
   jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &usersDummy)
+  json.Unmarshal([]uint8(jsonString), &usersDummy)
 
   dummyLen := len(usersDummy.Object)
   users = make([]User, dummyLen)
@@ -581,7 +581,7 @@ func (self *Api) SetReceiveChannel(receiveChannel interface{}) {
 func (self *Api) goGetUser(url string, response chan User) {
   var user tTwitterUserDummy
   jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &user)
+  json.Unmarshal([]uint8(jsonString), &user)
 
   u := &(user.Object)
   if err := u.GetError(); err != "" {
@@ -595,7 +595,7 @@ func (self *Api) goGetStatus(id int64, response chan Status) {
   url := fmt.Sprintf(_QUERY_GETSTATUS, id)
   var status tTwitterStatusDummy
   jsonString := self.getJsonFromUrl(url)
-  json.Unmarshal(jsonString, &status)
+  json.Unmarshal([]uint8(jsonString), &status)
 
   s := &(status.Object)
   if err := s.GetError(); err != "" {
