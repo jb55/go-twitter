@@ -27,7 +27,6 @@ import (
   "strings"
   "net"
   "bufio"
-  "strconv"
   "fmt"
   "bytes"
 )
@@ -53,7 +52,7 @@ func send(req *http.Request) (resp *http.Response, err os.Error) {
   if !hasPort(addr) {
     addr += ":http"
   }
-  conn, err := net.Dial("tcp", "", addr)
+  conn, err := net.Dial("tcp", addr)
   if err != nil {
     return nil, err
   }
@@ -72,11 +71,7 @@ func send(req *http.Request) (resp *http.Response, err os.Error) {
   }
 
   r := io.Reader(reader)
-  if v := resp.GetHeader("Content-Length"); v != "" {
-    n, err := strconv.Atoi64(v)
-    if err != nil {
-      return nil, &badStringError{"invalid Content-Length", v}
-    }
+  if n := resp.ContentLength; n != -1 {
     r = io.LimitReader(r, n)
   }
   resp.Body = readClose{r, conn}
@@ -94,9 +89,10 @@ func encodedUsernameAndPassword(user, pwd string) string {
 
 func authGet(url, user, pwd string) (r *http.Response, err os.Error) {
   var req http.Request
-
-  req.Header = map[string]string{"Authorization": "Basic " +
-    encodedUsernameAndPassword(user, pwd)}
+  h := make(http.Header)
+  h.Add("Authorization", "Basic " +
+      encodedUsernameAndPassword(user, pwd))
+  req.Header = h
   if req.URL, err = http.ParseURL(url); err != nil {
     return
   }
@@ -115,15 +111,16 @@ func authPost(url, user, pwd, client, clientURL, version, agent, bodyType string
   var req http.Request
   req.Method = "POST"
   req.Body = body.(io.ReadCloser)
-  req.Header = map[string]string{
-    "Content-Type":         bodyType,
-    "Transfer-Encoding":    "chunked",
-    "User-Agent":           agent,
-    "X-Twitter-Client":     client,
-    "X-Twitter-Client-URL": clientURL,
-    "X-Twitter-Version":    version,
-    "Authorization": "Basic " + encodedUsernameAndPassword(user, pwd),
-  }
+  
+  h := make(http.Header)
+  h.Add("Content-Type",         bodyType)
+  h.Add("Transfer-Encoding",    "chunked")
+  h.Add("User-Agent",           agent)
+  h.Add("X-Twitter-Client",     client)
+  h.Add("X-Twitter-Client-URL", clientURL)
+  h.Add("X-Twitter-Version",    version)
+  h.Add("Authorization", "Basic " + encodedUsernameAndPassword(user, pwd))
+  req.Header = h
 
   req.URL, err = http.ParseURL(url)
   if err != nil {

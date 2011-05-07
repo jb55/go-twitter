@@ -608,12 +608,14 @@ func (self *Api) goGetStatus(id int64, response chan Status) {
 func (self *Api) reportError(error string) {
   err := &TwitterError{error}
   self.lastError = err
-  ok := self.errors <- err
-  if !ok {
+  select {
+  case self.errors <- err: // do nothing
+  default:
     // The error buffer is full, make room for one
     <-self.errors
-    ok := self.errors <- err
-    if !ok {
+    select {
+    case self.errors <- err: // do nothing
+    default:
       // Yo dawg
       fmt.Fprintf(os.Stderr, "Error adding error to error buffer\n")
     }
