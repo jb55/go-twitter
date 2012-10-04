@@ -80,7 +80,7 @@ func (self *tTwitterStatus) setUser(user User) {
 
 func (self *tTwitterStatus) GetCreatedAtInSeconds() int64 {
   if self.createdAtSeconds == 0 {
-    self.createdAtSeconds = parseTwitterDate(self.Created_at).Seconds()
+    self.createdAtSeconds = int64(parseTwitterDate(self.Created_at).Second())
   }
   return self.createdAtSeconds;
 }
