@@ -17,9 +17,9 @@ package twitter
 
 import (
 	"io/ioutil"
-	"http"
+	"net/http"
 	"fmt"
-	"url"
+	"net/url"
 )
 
 func fixBrokenJson(j string) string { return `{"object":` + j + "}" }

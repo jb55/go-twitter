@@ -22,8 +22,11 @@ Quick Start
 
 ::
 
-  import "twitter"
+  import (
+    "go-twitter"
+    "fmt"
 
+  )
   // Prints the public timeline
   func main() {
     api := twitter.NewApi();
