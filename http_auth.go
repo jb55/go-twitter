@@ -20,7 +20,7 @@
 package twitter
 
 import (
-	"http"
+	"net/http"
 	"encoding/base64"
 	"io"
 	"strings"
@@ -28,7 +28,7 @@ import (
 	"bufio"
 	"fmt"
 	"bytes"
-	"url"
+	"net/url"
 )
 
 type readClose struct {

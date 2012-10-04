@@ -18,11 +18,11 @@ package twitter
 import (
 	"fmt"
 	"os"
-	"json"
+	"encoding/json"
 	"strconv"
 	"time"
 	"regexp"
-	"url"
+	"net/url"
 )
 
 const (
@@ -445,10 +445,11 @@ func parseTwitterDate(date string) *time.Time {
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error()+"\n")
-		return time.LocalTime()
+		t :=time.Now()
+                return &t
 	}
 
-	return parsedTime
+	return &parsedTime
 }
 
 // TODO: consolidate getStatuses/getUsers when we get generics or when someone
