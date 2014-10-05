@@ -20,15 +20,16 @@
 package twitter
 
 import (
-	"net/http"
-	"encoding/base64"
-	"io"
-	"strings"
-	"net"
 	"bufio"
-	"fmt"
 	"bytes"
+	"encoding/base64"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net"
+	"net/http"
 	"net/url"
+	"strings"
 )
 
 type readClose struct {
@@ -109,7 +110,23 @@ func authPost(url_, user, pwd, client, clientURL, version, agent, bodyType strin
 	body io.Reader) (r *http.Response, err error) {
 	var req http.Request
 	req.Method = "POST"
-	req.Body = body.(io.ReadCloser)
+
+	var ok bool
+	req.Body, ok = body.(io.ReadCloser)
+	if !ok && body != nil {
+		req.Body = ioutil.NopCloser(body)
+	}
+
+	if body != nil {
+		switch v := body.(type) {
+		case *bytes.Buffer:
+			req.ContentLength = int64(v.Len())
+		case *bytes.Reader:
+			req.ContentLength = int64(v.Len())
+		case *strings.Reader:
+			req.ContentLength = int64(v.Len())
+		}
+	}
 
 	h := make(http.Header)
 	h.Add("Content-Type", bodyType)
